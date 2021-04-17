@@ -1,3 +1,0 @@
-User-agent: *
-Disallow:
-Sitemap: https://davide99.github.io/davide99.github.io/sitemap.xml
