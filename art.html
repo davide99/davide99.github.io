@@ -23,6 +23,8 @@
         <source type="video/mp4" src="img/challenge_accepted.mp4">
     </video>
 
+    <b>TL;DR</b>: Jump to the <a href="#conclusions">last section</a>
+
     <h2>0. The main idea</h2><hr>
     1448 byte is pretty damn good, but can we do better? A big amount of space in an executable is usually wasted by:
     <ol>
@@ -144,7 +146,7 @@ void initAPI(...) {
     So, we now know where <code>kernel32.dll</code> is loaded in memory. Let's move on.
 
     <h2>2. Parsing the export tables</h2><hr>
-    Now you might ask, what's the point of knowing a DLL base address? <mark>Well, given a DLL base address, we can:</mark>
+    Now you might ask, what's the point of knowing a DLL base address? Well, <mark>given a DLL base address, we can:</mark>
     <ol>
         <li><mark>Parse the DLL headers</mark></li>
         <li><mark>Find the pointers to the exported functions we want to use</mark></li>
@@ -239,9 +241,7 @@ typedef __declspec(align(1)) struct {
     </ol>
 
     <h3>2.5. The <code>findFunc</code> function</h3>
-<pre>
-<code>
-#pragma pack(push, 1)
+<pre><code>#pragma pack(push, 1)
 struct dll_info {
     uint32_t exported_functions;
     uintptr_t address_table_RVA;
@@ -281,9 +281,7 @@ void findFunc(uintptr_t dllBase, uint32_t* hashes, void** ptrs, size_t size) {
             }
         }
     }
-}
-</code>
-</pre>
+}</code></pre>
     <code>findFunc</code> takes as its inputs:
     <ol>
         <li>The base address where the DLL is loaded</li>
@@ -306,9 +304,7 @@ void findFunc(uintptr_t dllBase, uint32_t* hashes, void** ptrs, size_t size) {
     <h3>2.6. Getting the <code>kernel32.dll</code> APIs</h3>
     Now everything should be set up to load in the <code>API</code> struct the function pointers to the <code>kernel32.dll</code> functions.
     <br>Since the <code>API</code> struct is <i>packed</i> we can modify our <code>initAPI</code> function as follows:
-<pre>
-<code>
-void initAPI(API* api) {
+<pre><code>void initAPI(API* api) {
     PPEB peb = __readfsdword(0x30);
     uintptr_t kernel32Base = 0;
 
@@ -324,9 +320,7 @@ void initAPI(API* api) {
     }
 
     findFunc(kernel32Base, Kernel32Hashes, &api->_LoadLibraryA, ARRAYSIZE(Kernel32Hashes));
-}
-</code>
-</pre>
+}</code></pre>
 
     Where <code>ARRAYSIZE</code> is a macro imported by including <code>windows.h</code>, which returns the length of a static array.
 
@@ -343,9 +337,7 @@ void initAPI(API* api) {
     </ul>
 
     The <code>initAPI</code> function needs to be changed accordingly:
-<pre>
-<code>
-void initAPI(API* api) {
+<pre><code>void initAPI(API* api) {
     PPEB peb = __readfsdword(0x30);
     uintptr_t kernel32Base = 0;
 
@@ -367,22 +359,16 @@ void initAPI(API* api) {
 
     HMODULE gdi32 = api->_LoadLibraryA("GDI32.DLL");
     findFunc((uintptr_t)gdi32, &Gdi32Hash, &api->_SetBkMode, 1);
-}
-</code>
-</pre>
+}</code></pre>
 Where in the last <code>findFunc</code> call we just pass 1 as the array size, since we need just 1 function in <code>gdi32.dll</code>. You can find the new function ponters definition <a href="https://github.com/davide99/MinHW/blob/master/MinHW/api.h">here</a> and the new hashes <a href="https://github.com/davide99/MinHW/blob/master/MinHW/api.c">here</a>.
 
     <h2>3. Producing a small executable</h2><hr>
     <h3>3.1. Visual Studio configuration</h3>
     Clearly, we might want to tweak MSVC and the linker to produce a small binary. I made a new configuration called "MinRel" based off the standard "Release" one. After playing around with the configuration I ended up with this command line parameters:<br>
     <h4>Compiler</h4>
-<pre><code class="plaintext">
-/permissive- /ifcOutput "MinRel\" /GS- /analyze- /W3 /Gy /Zc:wchar_t- /Gm- /O1 /Ob0 /sdl- /Fd"MinRel\vc142.pdb" /Zc:inline /fp:precise /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /fp:except- /errorReport:prompt /GF /WX- /Zc:forScope /arch:IA32 /Gd /Oy /Oi /MD /FC /Fa"MinRel\" /nologo /Zl /Fo"MinRel\" /Os /Fp"MinRel\MinHW.pch" /diagnostics:column 
-</code></pre>
+<pre><code class="plaintext">/permissive- /ifcOutput "MinRel\" /GS- /analyze- /W3 /Gy /Zc:wchar_t- /Gm- /O1 /Ob0 /sdl- /Fd"MinRel\vc142.pdb" /Zc:inline /fp:precise /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /fp:except- /errorReport:prompt /GF /WX- /Zc:forScope /arch:IA32 /Gd /Oy /Oi /MD /FC /Fa"MinRel\" /nologo /Zl /Fo"MinRel\" /Os /Fp"MinRel\MinHW.pch" /diagnostics:column</code></pre>
     <h4>Linker</h4>
-<pre><code class="plaintext">
-/OUT:"C:\Users\Davide\source\repos\MinHW\MinRel\MinHW.exe" /MANIFEST:NO /PDB:"C:\Users\Davide\source\repos\MinHW\MinRel\MinHW.pdb" /DYNAMICBASE:NO /MACHINE:X86 /ENTRY:"main" /WINMD:NO /OPT:REF /SAFESEH:NO /INCREMENTAL:NO /PGD:"C:\Users\Davide\source\repos\MinHW\MinRel\MinHW.pgd" /SUBSYSTEM:WINDOWS /MANIFESTUAC:NO /ManifestFile:"MinRel\MinHW.exe.intermediate.manifest" /LTCGOUT:"MinRel\MinHW.iobj" /OPT:ICF /ERRORREPORT:PROMPT /NOLOGO /ALIGN:16 /NODEFAULTLIB /TLBID:1 /MERGE:.rdata=.text /MERGE:.data=.text /EMITPOGOPHASEINFO /RELEASE /STUB:"$(MSBuildProjectDirectory)\stub.bin"
-</code></pre>
+<pre><code class="plaintext">/OUT:"C:\Users\Davide\source\repos\MinHW\MinRel\MinHW.exe" /MANIFEST:NO /PDB:"C:\Users\Davide\source\repos\MinHW\MinRel\MinHW.pdb" /DYNAMICBASE:NO /MACHINE:X86 /ENTRY:"main" /WINMD:NO /OPT:REF /SAFESEH:NO /INCREMENTAL:NO /PGD:"C:\Users\Davide\source\repos\MinHW\MinRel\MinHW.pgd" /SUBSYSTEM:WINDOWS /MANIFESTUAC:NO /ManifestFile:"MinRel\MinHW.exe.intermediate.manifest" /LTCGOUT:"MinRel\MinHW.iobj" /OPT:ICF /ERRORREPORT:PROMPT /NOLOGO /ALIGN:16 /NODEFAULTLIB /TLBID:1 /MERGE:.rdata=.text /MERGE:.data=.text /EMITPOGOPHASEINFO /RELEASE /STUB:"$(MSBuildProjectDirectory)\stub.bin"</code></pre>
     You can see some undocumented/not common flags here:
     <ul>
         <li><code>/DYNAMICBASE:NO</code> &rarr; removes the relocation table from the EXE</li>
@@ -422,7 +408,7 @@ Where in the last <code>findFunc</code> call we just pass 1 as the array size, s
     The thing is that, today, compiler are pretty damn good, so there isn't really any point in writing assembly (even if there might be some exceptions).
 
     <h2>4. Asking DavePl</h2><hr>
-    Here comes the point when I asked for help. I reached Dave Plummer himself to tell him about my final EXE size and ask him if he knew other ways to reduce the size. Sure enough, he promptly gave me some advices:
+    Here comes the point when I asked for help. I reached Dave Plummer himself to tell him about my final EXE size and ask him if he knew <mark>other ways to reduce the size</mark>. Sure enough, he promptly gave me some advices:
 
     <ul>
         <li><mark>Use another linker called <b>Crinkler</b></mark></li>
@@ -445,11 +431,7 @@ Where in the last <code>findFunc</code> call we just pass 1 as the array size, s
     I was quite skeptical at the beginning: approximately 1200 bytes is very small by today's standards, maybe we can't go lower. But guess what? There's always room for improvements.<br><br>
 
     After a few minutes reading the <a href="https://github.com/runestubbe/Crinkler/blob/master/doc/manual.txt">manual</a>, I ended up executing the following command in the same directory where Visual Studio generates the .obj files:
-    <pre>
-<code class="plaintext">
-Crinkler.exe /NODEFAULTLIB /ENTRY:main /SUBSYSTEM:WINDOWS /TINYHEADER /NOINITIALIZERS /UNSAFEIMPORT /ORDERTRIES:1000 /TINYIMPORT /LIBPATH:"C:\Program Files (x86)\Windows Kits\10\Lib\10.0.18362.0\um\x86" MinHW.obj api.obj kernel32.lib
-</code>
-    </pre>
+    <pre><code class="plaintext">Crinkler.exe /NODEFAULTLIB /ENTRY:main /SUBSYSTEM:WINDOWS /TINYHEADER /NOINITIALIZERS /UNSAFEIMPORT /ORDERTRIES:1000 /TINYIMPORT /LIBPATH:"C:\Program Files (x86)\Windows Kits\10\Lib\10.0.18362.0\um\x86" MinHW.obj api.obj kernel32.lib</code></pre>
     
     Let's analyze some flags:
     <ul>
@@ -464,16 +446,12 @@ Crinkler.exe /NODEFAULTLIB /ENTRY:main /SUBSYSTEM:WINDOWS /TINYHEADER /NOINITIAL
 
     <p id="kernel32_path"></p>
     Notice how we need to link <code>kernel32.lib</code>, because Crinkler emits some code that needs to be linked against it. If you have a Windows 10 SDK installed, you can find your x86 <code>kernel32.lib</code> file under:
-<pre>
-    <code class="plaintext">
-        C:\Program Files (x86)\Windows Kits\10\Lib\&lt;<b>version</b>&gt;\um\x86
-    </code>
-</pre>
+<pre><code class="plaintext">C:\Program Files (x86)\Windows Kits\10\Lib\&lt;<b>version</b>&gt;\um\x86</code></pre>
     Replace <code>&lt;<b>version</b>&gt;</code> with the newer version you have installed.
     <br><br>
     Read the following section to know the latest size.
 
-    <h2>5. Conclusions</h2><hr>
+    <h2 id="conclusions">5. Conclusions</h2><hr>
     The final size is:
     <h1>874 bytes</h1>
     This means that the new executable is:
