@@ -15,7 +15,6 @@
 
     var request = new XMLHttpRequest();
 
-    document.open();
     pages.forEach(function(entry) {
         request.open("GET", entry, true);
         request.send(null);
@@ -25,7 +24,5 @@
             document.body.innerHTML += request.responseText;
         };
     });
-    document.close();
-
     
 </script>
