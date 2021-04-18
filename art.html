@@ -55,7 +55,7 @@
     <code>kernel32.dll</code> is automatically loaded in each Windows' process address space, right before being executed. This means that, technically, we should be able to poke around in the process address space to find the <code>kernel32.dll</code> APIs that we need.
     
     <h3>1.1. Understanding the <i>InMemoryOrderModuleList</i></h3>
-    Before a process is actually executed by Windows, the kernel fills a struct in memory called <a href="https://docs.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-teb"><code>TEB</code></a>, which contains a lot of information of the process itself. Now bear with me:
+    Before a process is actually executed by Windows, the kernel fills a struct in memory called <a href="https://docs.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-teb"><code>TEB</code></a>, which contains a lot of information about the process itself. Now bear with me:
     <ol>
         <li>The <code><b>FS</b></code> register contains a pointer to the <code><b>TEB</b></code></li>
         <li>The <code><b>TEB</b></code> contains a pointer to the <b>Process Environment Block <code>(PEB)</code></b></li>
@@ -80,16 +80,16 @@
 
     <img src="img/list_entry.svg" loading="lazy" style="width: 70%;">
 
-    Pay attention to the first <code>PVOID</code> field: that's the reason why we can't brutally cast the <code>LIST_ENTRY</code> to a <code>LDR_DATA_TABLE_ENTRY</code>, but we need to take care of that "extra padding".
+    Pay attention to the first <code>PVOID</code> field: that's the reason why we can't brutally cast the <code>LIST_ENTRY</code> to an <code>LDR_DATA_TABLE_ENTRY</code>, but we need to take care of that "extra padding".
     <br><br>
-    You can find a partial definition of <code>LDR_DATA_TABLE_ENTRY</code> in <code>winternl.h</code>. The problem is that said definition only exposes very few of the actual fields. However, playing with Microsoft provided debug symbols, you can find a lot more "undocumented" fields that we need. I decided to define my own version of the struct (shown above). As you can notice, there's a 116 byte padding <code>pad</code>. This is because there's a few dozen fields between <code>DllBase</code> and <code>BaseNameHashValue</code> that we don't really care about.
+    You can find a partial definition of <code>LDR_DATA_TABLE_ENTRY</code> in <code>winternl.h</code>. The problem is that said definition only exposes very few of the actual fields. However, playing with Microsoft-provided debug symbols, you can find a lot more "undocumented" fields that we need. I decided to define my own version of the struct (shown above). As you can notice, there's a 116 byte padding <code>pad</code>. This is because there are a few dozen fields between <code>DllBase</code> and <code>BaseNameHashValue</code> that we don't really care about.
 
-    <h3>1.2. What is an hash?</h3>
+    <h3>1.2. What is a hash?</h3>
     To put it simply:
     <ul>
         <li>Let \(A\) be a varying length bit string</li>
         <li>\(hash\_func(A)=B\)</li>
-        <li>\(B\) is a fixed length bit string, called <b>hash</b></li>
+        <li>\(B\) is a fixed-length bit string, called <b>hash</b></li>
     </ul>
     Moreover, hash functions are engineered in such a way that it is very likely that different \(A\)s produce different \(B\)s.
     This (almost always) means that, letting \(B_1=hash\_func(A_1)\) and \(B_2=hash\_func(A_2)\) then:
@@ -300,7 +300,7 @@ void findFunc(uintptr_t dllBase, uint32_t* hashes, void** ptrs, size_t size) {
         <li>An (empty) array of function pointers</li>
         <li>The length of the arrays</li>
     </ol>
-    Every function name exported by the DLL is hashed with \(djb2\) and compared with each hash in the array passed as the second parameter. If it's a match then the pointer to that function is stored in the <code>void**</code> array. For example , after the function is executed:
+    Every function name exported by the DLL is hashed with \(djb2\) and compared with each hash in the array passed as the second parameter. If it's a match then the pointer to that function is stored in the <code>void **</code> array. For example, after the function is executed:
     \[hashes[0]=djb2(“LoadLibraryA”)=\text{0x5FBFF0FB} \Longrightarrow ptrs[0] = \text{function pointer to LoadLibraryA}\]
 
     A couple of things you might want to understand:
@@ -338,7 +338,7 @@ void findFunc(uintptr_t dllBase, uint32_t* hashes, void** ptrs, size_t size) {
 
     <h3>2.7. Getting the <code>user32.dll</code> and <code>gdi32.dll</code> APIs</h3>
     We actually need other functions exported by <code>user32.dll</code> and <code>gdi32.dll</code>.<br><br>
-    The problem is that we neither know the base address of these DLLs nor they are automatically loaded like <code>kernel32.dll</code>. We do can use a trick however: the <code>LoadLibrary</code> function exported by <code>kernel32.dll</code>.<br>
+    The problem is that we neither know the base address of these DLLs nor they are automatically loaded like <code>kernel32.dll</code>. We can use a trick however: the <code>LoadLibrary</code> function exported by <code>kernel32.dll</code>.<br>
     <code>LoadLibrary</code> loads a DLL by its file name and returns an <code>HMODULE</code>, which, in fact, is just a <code>PVOID</code>, pointing to the DLL base address: we can cast it to a <code>uintptr_t</code> and use it in our <code>findFunc</code>.
     <br><br>
     We also need to:
@@ -372,11 +372,11 @@ void findFunc(uintptr_t dllBase, uint32_t* hashes, void** ptrs, size_t size) {
     HMODULE gdi32 = api->_LoadLibraryA("GDI32.DLL");
     findFunc((uintptr_t)gdi32, &Gdi32Hash, &api->_SetBkMode, 1);
 }</code></pre>
-Where in the last <code>findFunc</code> call we just pass 1 as the array size, since we need just 1 function in <code>gdi32.dll</code>. You can find the new function ponters definition <a href="https://github.com/davide99/MinHW/blob/master/MinHW/api.h">here</a> and the new hashes <a href="https://github.com/davide99/MinHW/blob/master/MinHW/api.c">here</a>.
+Where in the last <code>findFunc</code> call we just pass 1 as the array size, since we need just 1 function in <code>gdi32.dll</code>. You can find the new function pointers definition <a href="https://github.com/davide99/MinHW/blob/master/MinHW/api.h">here</a> and the new hashes <a href="https://github.com/davide99/MinHW/blob/master/MinHW/api.c">here</a>.
 
     <h2>3. Producing a small executable</h2><hr>
     <h3>3.1. Visual Studio configuration</h3>
-    Clearly, we might want to tweak MSVC and the linker to produce a small binary. I made a new configuration called "MinRel" based off the standard "Release" one. After playing around with the configuration I ended up with this command line parameters:<br>
+    Clearly, we might want to tweak MSVC and the linker to produce a small binary. I made a new configuration called "MinRel" based on the standard "Release" one. After playing around with the configuration I ended up with these command line parameters:<br>
     <h4>Compiler</h4>
 <pre><code class="plaintext">/permissive- /ifcOutput "MinRel\" /GS- /analyze- /W3 /Gy /Zc:wchar_t- /Gm- /O1 /Ob0 /sdl- /Fd"MinRel\vc142.pdb" /Zc:inline /fp:precise /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /fp:except- /errorReport:prompt /GF /WX- /Zc:forScope /arch:IA32 /Gd /Oy /Oi /MD /FC /Fa"MinRel\" /nologo /Zl /Fo"MinRel\" /Os /Fp"MinRel\MinHW.pch" /diagnostics:column</code></pre>
     <h4>Linker</h4>
@@ -386,16 +386,16 @@ Where in the last <code>findFunc</code> call we just pass 1 as the array size, s
         <li><code>/DYNAMICBASE:NO</code> &rarr; removes the relocation table from the EXE</li>
         <li><code>/ENTRY:"main"</code> &rarr; sets a custom entry point</li>
         <li><code>/ALIGN:16</code> &rarr; sets the alignment of each section in the EXE, we can't go lower than 16 bytes</li>
-        <li><code>/NODEFAULTLIB</code> &rarr; avoids using standard linked library</li>
+        <li><code>/NODEFAULTLIB</code> &rarr; avoids using the standard linked library</li>
         <li><code>/EMITPOGOPHASEINFO</code> &rarr; removes some additional debug information (<a href="https://stackoverflow.com/a/45546715">undocumented</a>)</li>
         <li><code>/MERGE</code> &rarr; merges different sections</li>
-        <li><code>/RELESE</code> &rarr; along with <code>/EMITPOGOPHASEINFO</code> removes all debug information</li>
+        <li><code>/RELEASE</code> &rarr; along with <code>/EMITPOGOPHASEINFO</code> removes all debug information</li>
         <li><code>/STUB</code> &rarr; specifies a custom DOS stub (a small custom MZ EXE)</li>
     </ul>
     Even if I'm quite sure we don't actually need all these flags, I ended up with a 1312 byte EXE.
     
     <h3>3.2. Removing some bytes</h3>
-    We can cut some extra bytes by opening the EXE with an hex editor.
+    We can cut some extra bytes by opening the EXE with a hex editor.
     <img src="img/3.1.webp" loading="lazy" style="width: 90%;">
     As you can see, the last 0x5D bytes of the executable are all \(0\)s: we can delete them.<br>
     We also need to change the <code>SizeOfCode</code> field in the <code>IMAGE_OPTIONAL_HEADER</code>. To put it simply, just go to offset 0x8C and decrease whatever you find (0x90 in my case) by the number of bytes we removed earlier (0x5D):
@@ -415,10 +415,10 @@ Where in the last <code>findFunc</code> call we just pass 1 as the array size, s
     (The video has been sped up to 10x)
     <br><br>
     Now the funny thing: after compiling the source code with MASM (ML actually), I ended up with a binary with exactly the same size as the C one.<br>
-    The thing is that, today, compiler are pretty damn good, so there isn't really any point in writing assembly (even if there might be some exceptions).
+    The thing is that, today, compilers are pretty damn good, so there isn't really any point in writing assembly (even if there might be some exceptions).
 
     <h2>4. Asking DavePl</h2><hr>
-    Here comes the point when I asked for help. I reached Dave Plummer himself to tell him about my final EXE size and ask him if he knew <mark>other ways to reduce the size</mark>. Sure enough, he promptly gave me some advices:
+    Here comes the point when I asked for help. I reached Dave Plummer himself to tell him about my final EXE size and ask him if he knew <mark>other ways to reduce the size</mark>. Sure enough, he promptly gave me some pieces of advice:
 
     <ul>
         <li><mark>Move structs in the <i>BSS</i></mark></li>
@@ -438,7 +438,7 @@ Where in the last <code>findFunc</code> call we just pass 1 as the array size, s
         Crinkler is an executable file compressor (or rather, a compressing linker) for Windows for compressing small <a href="https://en.wikipedia.org/wiki/Demoscene">demoscene</a> executables. As of 2020, it is the most widely used tool for compressing 1k/4k/8k intros.
     </blockquote>
 
-    I was quite skeptical at the beginning: approximately 1200 bytes is very small by today's standards, maybe we can't go lower. But guess what? There's always room for improvements.<br><br>
+    I was quite skeptical at the beginning: approximately 1200 bytes is very small by today's standards, maybe we can't go lower. But guess what? There's always room for improvement.<br><br>
 
     After a few minutes reading the <a href="https://github.com/runestubbe/Crinkler/blob/master/doc/manual.txt">manual</a>, I ended up executing the following command in the same directory where Visual Studio generates the .obj files:
     <pre><code class="plaintext">Crinkler.exe /NODEFAULTLIB /ENTRY:main /SUBSYSTEM:WINDOWS /TINYHEADER /NOINITIALIZERS /UNSAFEIMPORT /ORDERTRIES:1000 /TINYIMPORT /LIBPATH:"C:\Program Files (x86)\Windows Kits\10\Lib\10.0.18362.0\um\x86" MinHW.obj api.obj kernel32.lib</code></pre>
@@ -447,7 +447,7 @@ Where in the last <code>findFunc</code> call we just pass 1 as the array size, s
     <ul>
         <li><code>/NODEFAULTLIB</code>, <code>/ENTRY</code> and <code>/SUBSYSTEM</code> behave exactly the same as with the Microsoft linker</li>
         <li><code>/TINYHEADER</code> &rarr; uses an alternative compression algorithm which is beneficial for extremely small file</li>
-        <li><code>/NOINITIALIZERS</code> &rarr; disables some C++ related features. We are using plain C, we don't need them</li>
+        <li><code>/NOINITIALIZERS</code> &rarr; disables some C++-related features. We are using plain C, we don't need them</li>
         <li><code>/UNSAFEIMPORT</code> &rarr; avoid displaying a MessageBox if an import fails, generating a smaller executable</li>
         <li><code>/ORDERTRIES</code> &rarr; specifies how many section reordering iterations Crinkler will try</li>
         <li><code>/TINYIMPORT</code> &rarr; enables a more compact function importing scheme</li>
@@ -455,7 +455,7 @@ Where in the last <code>findFunc</code> call we just pass 1 as the array size, s
     </ul>
 
     <p id="kernel32_path"></p>
-    Notice how we need to link <code>kernel32.lib</code>, because Crinkler emits some code that needs to be linked against it. If you have a Windows 10 SDK installed, you can find your x86 <code>kernel32.lib</code> file under:
+    Notice how we need to link <code>kernel32.lib</code> because Crinkler emits some code that needs to be linked against it. If you have a Windows 10 SDK installed, you can find your x86 <code>kernel32.lib</code> file under:
 <pre><code class="plaintext">C:\Program Files (x86)\Windows Kits\10\Lib\&lt;<b>version</b>&gt;\um\x86</code></pre>
     Replace <code>&lt;<b>version</b>&gt;</code> with the newer version you have installed.
     <br><br>
@@ -478,7 +478,7 @@ Where in the last <code>findFunc</code> call we just pass 1 as the array size, s
         <li>Extract the zip somewhere</li>
         <li>Find <code>kernel32.lib</code> as discussed <a href="#kernel32_path">here</a> and edit <code>build.bat</code> accordingly</li>
         <li>Make sure you have Visual Studio with MSVC + Windows 10 SDK installed</li>
-        <li>Search on you computer <i>x86 Native Tools Command Prompt for VS 2019</i> or <i>x64_x86 Cross Tools Command Prompt for VS 2019</i> if you want to crosscomiple on a x86_64 system</li>
+        <li>Search on your computer <i>x86 Native Tools Command Prompt for VS 2019</i> or <i>x64_x86 Cross Tools Command Prompt for VS 2019</i> if you want to cross comiple on an x86_64 system</li>
         <li><code>cd</code> into the directory where you extracted the zip</li>
         <li>Execute <code>build.bat</code></li>
     </ol>
@@ -492,6 +492,6 @@ Where in the last <code>findFunc</code> call we just pass 1 as the array size, s
     If you have some ideas on how to shrink the executable even more, email me at <a href="mailto:info.davide99@gmail.com">info.davide99@gmail.com</a>.
 
     <h3>5.3. Special thanks</h3>
-    Obviously, a special thank goes to Dave Plummer. He gave me a great coding adventure to work with and some great tips. Thank you for the effort you put in things.
+    Obviously, a special thank goes to Dave Plummer. He gave me a great coding adventure to work with and some great tips. Thank you for the effort you put into things.
 </body>
 </html>
