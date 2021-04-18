@@ -15,7 +15,7 @@
 
     var request = new XMLHttpRequest();
 
-    a.forEach(function(entry) {
+    pages.forEach(function(entry) {
         request.open("GET", entry, true);
         request.send(null);
         request.onreadystatechange = function() {
