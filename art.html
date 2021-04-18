@@ -213,7 +213,7 @@ typedef __declspec(align(1)) struct {
     Again, the suffixed underscore is needed to avoid namespace clashes and Microsoft's <code>#define</code>s to mess up.
 
     <h3>2.3. Understanding the PE format</h3>
-    <img src="img/dll_format.svg">
+    <img src="img/dll_format.svg" style="width: 90%;">
 
     First off: <b>RVA</b> stands for Relative Virtual Address and it's a pointer in memory to a part of the DLL relative to the DLL base address.<br><br>
     Now, this is what we are going to do:
@@ -231,7 +231,7 @@ typedef __declspec(align(1)) struct {
     </ol>
 
     <h3>2.4. How to find an exported function pointer</h3>
-    <img src="img/tables.svg">
+    <img src="img/tables.svg" style="width: 90%;">
     Let's say we need to find the pointer to the function "Function1", we need to:
     <ol>
         <li>Linearly scan the <b>Export name pointer table</b> until we find the function name "Function1"</li>
@@ -454,6 +454,7 @@ Where in the last <code>findFunc</code> call we just pass 1 as the array size, s
     <h2 id="conclusions">5. Conclusions</h2><hr>
     The final size is:
     <h1>874 bytes</h1>
+    <img src="img/size2.webp" style="width: 90%;">
     This means that the new executable is:
     <ul>
         <li>\(28.3\%\) smaller than the previous 1219 bytes one</li>
