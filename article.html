@@ -3,8 +3,11 @@
     const urlParams = new URLSearchParams(queryString);
 
     if (urlParams.has('id')) {
-        document.writeln(urlParams.get('id'));
+        const id = urlParams.get('id');
+
+        //window.location.replace("articles/" + )
     } else {
+        // If no id is given, then redirect to the base url
         window.location.replace(window.location.protocol + "//" + window.location.host);
     }
 </script>
