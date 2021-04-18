@@ -19,7 +19,7 @@
 
     It has been a while since I started following the Dave Plummer's amazing adventures in his Youtube channel <a href="https://www.youtube.com/channel/UCNzszbnvQeFzObW0ghk0Ckw">Dave's Garage</a> (take a look at his channel right now). He recently posted <a href="https://www.youtube.com/watch?v=b0zxIfJJLAY">a video</a> about making the "smallest Windows App in x86 ASM", where he was able to squeeze an entire (usable) Windows application in just 1488 byte. After watching the video I was like:
     
-    <video autoplay loop muted style="width:30%">
+    <video autoplay loop muted preload="none" style="width:30%">
         <source type="video/mp4" src="img/challenge_accepted.mp4">
     </video>
 
@@ -52,7 +52,7 @@
         <li>The <code><b>PEB_LDR_DATA</b></code> struct contains an <code><b>InMemoryOrderModuleList</b></code></li>
     </ol>
 
-    <img src="img/TEB_PEB.svg" style="width: 90%;">
+    <img src="img/TEB_PEB.svg" loading="lazy" style="width: 90%;">
 
     <mark><code><b>InMemoryOrderModuleList</b></code> contains</mark> something really useful: <mark>the base address where <code>kernel32.dll</code> is loaded into memory!</mark>
     <br><br>
@@ -63,11 +63,11 @@
     </blockquote>
     Now replace "modules" with DLLs and you can get an idea of what we are going to do.
     
-    <img src="img/InMemoryOrderModuleList.svg" style="width: 40%;">
+    <img src="img/InMemoryOrderModuleList.svg" loading="lazy" style="width: 40%;">
 
     Actually, <code>InMemoryOrderModuleList</code> contains pointers to <code><b>LIST_ENTRY</b></code>s. Each <code>LIST_ENTRY</code> is wrapped in an <code><b>LDR_DATA_TABLE_ENTRY</b></code>.
 
-    <img src="img/list_entry.svg" style="width: 70%;">
+    <img src="img/list_entry.svg" loading="lazy" style="width: 70%;">
 
     Pay attention to the first <code>PVOID</code> field: that's the reason why we can't brutally cast the <code>LIST_ENTRY</code> to a <code>LDR_DATA_TABLE_ENTRY</code>, but we need to take care of that "extra padding".
     <br><br>
@@ -213,7 +213,7 @@ typedef __declspec(align(1)) struct {
     Again, the suffixed underscore is needed to avoid namespace clashes and Microsoft's <code>#define</code>s to mess up.
 
     <h3>2.3. Understanding the PE format</h3>
-    <img src="img/dll_format.svg" style="width: 90%;">
+    <img src="img/dll_format.svg" loading="lazy" style="width: 90%;">
 
     First off: <b>RVA</b> stands for Relative Virtual Address and it's a pointer in memory to a part of the DLL relative to the DLL base address.<br><br>
     Now, this is what we are going to do:
@@ -231,7 +231,7 @@ typedef __declspec(align(1)) struct {
     </ol>
 
     <h3>2.4. How to find an exported function pointer</h3>
-    <img src="img/tables.svg" style="width: 90%;">
+    <img src="img/tables.svg" loading="lazy" style="width: 90%;">
     Let's say we need to find the pointer to the function "Function1", we need to:
     <ol>
         <li>Linearly scan the <b>Export name pointer table</b> until we find the function name "Function1"</li>
@@ -384,23 +384,21 @@ Where in the last <code>findFunc</code> call we just pass 1 as the array size, s
     
     <h3>3.2. Removing some bytes</h3>
     We can cut some extra bytes by opening the EXE with an hex editor.
-    <img src="img/3.1.webp" style="width: 90%;">
+    <img src="img/3.1.webp" loading="lazy" style="width: 90%;">
     As you can see, the last 0x5D bytes of the executable are all \(0\)s: we can delete them.<br>
     We also need to change the <code>SizeOfCode</code> field in the <code>IMAGE_OPTIONAL_HEADER</code>. To put it simply, just go to offset 0x8C and decrease whatever you find (0x90 in my case) by the number of bytes we removed earlier (0x5D):
-    <img src="img/3.2.webp" style="width: 90%;">
+    <img src="img/3.2.webp" loading="lazy" style="width: 90%;">
     We end up with a fully working 1219 bytes executable.
-    <img src="img/size1.webp" style="width: 90%;">
+    <img src="img/size1.webp" loading="lazy" style="width: 90%;">
     So, the executable is roughly \(18.1\%\) smaller than the original 1488 bytes one. Not bad. But can we do better?
 
 
     <h3>3.3. What about assembly?</h3>
     Now someone might ask: "why didn't you use assembly?". Well, I did.<br>
     Here is a <a href="https://gist.github.com/davide99/967e313952c08ea33ccfc113a7040c2e">gist</a> with some code I wrote to show a MessageBox. For your own pleasure, a GIF (joking, it's a looped video) of me writing assembly at really high speed.
-    <center>
-        <video autoplay loop muted style="width:80%">
-            <source type="video/mp4" src="img/asm.mp4">
-        </video>
-    </center>
+    <video autoplay loop muted preload="none" style="width:80%">
+        <source type="video/mp4" src="img/asm.mp4">
+    </video>
 
     (The video has been sped up to 10x).
     <br><br>
@@ -422,7 +420,7 @@ Where in the last <code>findFunc</code> call we just pass 1 as the array size, s
     I immediately moved the <code>WNDCLASSEX</code> in the global scope. This saved a bunch of bytes (I can't remember exactly how many).
 
     <h3>4.2. Using Crinkler</h3>
-    In its GitHub <a href="https://github.com/runestubbe/Crinkler">repo</a>, the <i>about</i> section states that:<br><br>
+    In its GitHub <a href="https://github.com/runestubbe/Crinkler">repo</a>, the <i>about</i> section states that:
 
     <blockquote>
         Crinkler is an executable file compressor (or rather, a compressing linker) for Windows for compressing small <a href="https://en.wikipedia.org/wiki/Demoscene">demoscene</a> executables. As of 2020, it is the most widely used tool for compressing 1k/4k/8k intros.
@@ -453,8 +451,8 @@ Where in the last <code>findFunc</code> call we just pass 1 as the array size, s
 
     <h2 id="conclusions">5. Conclusions</h2><hr>
     The final size is:
-    <h1>874 bytes</h1>
-    <img src="img/size2.webp" style="width: 90%;">
+    <p style="font-size: 2em; font-weight: bold; text-align: center; text-decoration: underline;">874 bytes</p>
+    <img src="img/size2.webp" loading="lazy" style="width: 90%;">
     This means that the new executable is:
     <ul>
         <li>\(28.3\%\) smaller than the previous 1219 bytes one</li>

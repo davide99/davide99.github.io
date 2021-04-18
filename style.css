@@ -1,30 +1,39 @@
 body {
-font-family: 'Trykker', serif;
-font-size: 1em;              
-max-width: 900px;
-padding: 2em;
-margin: 0 auto;
-background: #F5F5F0;
-text-align: justify;
+    font-family: 'Trykker', serif;
+    font-size: 1em;              
+    max-width: 900px;
+    padding: 2em;
+    margin: 0 auto;
+    background: #F5F5F0;
+    text-align: justify;
 }
 
-li{
+li {
     margin-bottom: 0.5em;
 }
 
 h1 {
-    font-family: 'Zilla Slab Highlight', cursive;
     text-align: center;
+    background-color: black;
+    color: blanchedalmond;
 }
 
 h2{
     font-family: 'Arimo', sans-serif;
-    padding-top: 1em;
+    margin-top: 2em;
+    margin-bottom: 0;
 }
 
 h3{
+    font-family: 'Arimo', sans-serif;
     margin-top: 1.5em;
     margin-bottom: 0.5em;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background-image: linear-gradient(to right, #777, #333, #777);
 }
 
 code{
@@ -32,43 +41,28 @@ code{
 }
 
 a {
-color: blue;
-font-weight: bold;
+    color: royalblue;
 }
 
 img, video {
-border: none; 
-display: block;
-padding: 2em;
-margin: 0 auto;
+    border: none; 
+    display: block;
+    padding: 2em;
+    margin: 0 auto;
 }
 
 @media (max-width: 500px) { /* For small screen decices */
 *{
     font-size: 12px; 
 }
-pre {
-    font-size: 11px;  
-}
 }   
 
+
 blockquote {
-    background: #f9f9f9;
-    border-left: 10px solid #ccc;
-    margin: 1.5em 10px;
-    padding: 0.5em 10px;
-    quotes: "\201C""\201D""\2018""\2019";
-}
-
-blockquote:before {
-    color: #ccc;
-    content: open-quote;
-    font-size: 4em;
-    line-height: 0.1em;
-    margin-right: 0.25em;
-    vertical-align: -0.4em;
-}
-
-blockquote p {
-    display: inline;
-}
+    margin-top: 2em;
+    margin-bottom: 2em;
+    margin-left: 0;
+    padding: 1em;
+    border-left: 3px solid #ccc;
+    font-style: italic;
+} 
