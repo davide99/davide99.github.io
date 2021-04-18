@@ -21,6 +21,7 @@
         request.send(null);
         request.onreadystatechange = function() {
         if (request.readyState == 4)
+            console.log(entry);
             document.write(request.responseText);
         };
     });
