@@ -5,6 +5,6 @@
     if (urlParams.has('id')) {
         document.writeln(urlParams.get('id'));
     } else {
-        window.location.replace(window.location.host);
+        window.location.replace(window.location.protocol + "//" + window.location.host);
     }
 </script>
