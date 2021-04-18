@@ -12,12 +12,23 @@
     <script>hljs.highlightAll();</script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script type="text/javascript">
+        window.addEventListener("load", function(event) {
+            if (localStorage.getItem("scroll_position_y") != null) {
+                window.scrollTo(0, localStorage.getItem("scroll_position_y"));
+            }
+
+            window.onscroll = function() {
+                localStorage.setItem("scroll_position_y", window.scrollY);
+            };
+        });
+    </script>
 </head>
 
 <body>
     <h1>Making the smallest Windows application</h1>
 
-    It has been a while since I started following the Dave Plummer's amazing adventures in his Youtube channel <a href="https://www.youtube.com/channel/UCNzszbnvQeFzObW0ghk0Ckw">Dave's Garage</a> (take a look at his channel right now). He recently posted <a href="https://www.youtube.com/watch?v=b0zxIfJJLAY">a video</a> about making the "smallest Windows App in x86 ASM", where he was able to squeeze an entire (usable) Windows application in just 1488 byte. After watching the video I was like:
+    It has been a while since I started following Dave Plummer's amazing adventures in his Youtube channel <a href="https://www.youtube.com/channel/UCNzszbnvQeFzObW0ghk0Ckw">Dave's Garage</a> (take a look at his channel right now). He recently posted <a href="https://www.youtube.com/watch?v=b0zxIfJJLAY">a video</a> about making the "smallest Windows App in x86 ASM", where he was able to squeeze an entire (usable) Windows application in just 1488 byte. After watching the video I was like:
     
     <video autoplay loop muted preload="none" style="width:30%">
         <source type="video/mp4" src="img/challenge_accepted.mp4">
@@ -31,16 +42,16 @@
         <li>Strings</li>
         <li>Statically linked libraries</li>
     </ol>
-    One can decrease the former's impact by enabling the <b><a href="https://en.wikipedia.org/wiki/Interprocedural_optimization#WPO_and_LTO">LTO</a></b> mechanism. But what about strings? Can we really avoid them?
+    One can decrease the former's impact by enabling the <a href="https://en.wikipedia.org/wiki/Interprocedural_optimization#WPO_and_LTO">LTO</a> mechanism. But is that enough? And what about strings? Can we really avoid them?
 
     <h3>0.1. DavePl application</h3>
     Dave Plummer, in his video, made a really valid point: it's quite trivial to make a small application when you just call "MessageBox".
     <br>
-    So the challenge was to borrow his <a href="https://pastebin.com/Pmvr4r1S">assembly source code</a>, convert it to C, write some more code and thensee what happens.
+    So the challenge was to borrow his <a href="https://pastebin.com/Pmvr4r1S">assembly source code</a> and convert it to C (so that we end up with an application that behaves exactly the same) then write some more glue code and see what happens.
     
 
     <h2>1. Finding <code>kernel32.dll</code> base address</h2><hr>
-    In Win32, as soon as you can use a couple of APIs exported by <code>kernel32.dll</code> you can do virtually everything (I'm talking about <i>LoadLibrary</i> and <i>GetProcAddress</i>).<br>
+    In Win32, as soon as you can use a couple of APIs exported by <code>kernel32.dll</code> you can do virtually everything (I'm talking about <code>LoadLibrary</code> and <code>GetProcAddress</code>).<br>
     <code>kernel32.dll</code> is automatically loaded in each Windows' process address space, right before being executed. This means that, technically, we should be able to poke around in the process address space to find the <code>kernel32.dll</code> APIs that we need.
     
     <h3>1.1. Understanding the <i>InMemoryOrderModuleList</i></h3>
@@ -71,7 +82,7 @@
 
     Pay attention to the first <code>PVOID</code> field: that's the reason why we can't brutally cast the <code>LIST_ENTRY</code> to a <code>LDR_DATA_TABLE_ENTRY</code>, but we need to take care of that "extra padding".
     <br><br>
-    You can find a partial definition of <code>LDR_DATA_TABLE_ENTRY</code> in <code>winternl.h</code>. The problem is that said definition only exposes very few of the whole fields. Actually, playing with Microsoft provided debug symbols, you can find a lot more "undocumented" fields that we need. I decided to define my own version of the struct (shown above). As you can notice, there's a 116 byte padding <code>pad</code>. This is because there's a few dozen fields between <code>DllBase</code> and <code>BaseNameHashValue</code> that we don't really care about.
+    You can find a partial definition of <code>LDR_DATA_TABLE_ENTRY</code> in <code>winternl.h</code>. The problem is that said definition only exposes very few of the actual fields. However, playing with Microsoft provided debug symbols, you can find a lot more "undocumented" fields that we need. I decided to define my own version of the struct (shown above). As you can notice, there's a 116 byte padding <code>pad</code>. This is because there's a few dozen fields between <code>DllBase</code> and <code>BaseNameHashValue</code> that we don't really care about.
 
     <h3>1.2. What is an hash?</h3>
     To put it simply:
@@ -298,6 +309,7 @@ void findFunc(uintptr_t dllBase, uint32_t* hashes, void** ptrs, size_t size) {
         <li>Sometimes a cast to <code>uint8_t *</code> is used because we can't do pointers arithmetic on <code>void *</code></li>
         <li>In the <code>for</code> body, we multiply <code>i</code> by 2 because <code>sizeof(ordinal) = 2</code></li>
         <li>Also, we multiply <code>ordinal_function</code> by 4 because <code>sizeof(address) = 4</code></li>
+        <li>I used quite a lot of variables, but the compiler will optimize most of them out</li>
         <li>The algorithm is \(O(n \cdot m)\)</li>
     </ul>
 
@@ -400,23 +412,23 @@ Where in the last <code>findFunc</code> call we just pass 1 as the array size, s
         <source type="video/mp4" src="img/asm.mp4">
     </video>
 
-    (The video has been sped up to 10x).
+    (The video has been sped up to 10x)
     <br><br>
-    Now the funny thing: after compiling the source code with MASM, I ended up with a binary with exactly the same size as the C one.<br>
+    Now the funny thing: after compiling the source code with MASM (ML actually), I ended up with a binary with exactly the same size as the C one.<br>
     The thing is that, today, compiler are pretty damn good, so there isn't really any point in writing assembly (even if there might be some exceptions).
 
     <h2>4. Asking DavePl</h2><hr>
     Here comes the point when I asked for help. I reached Dave Plummer himself to tell him about my final EXE size and ask him if he knew <mark>other ways to reduce the size</mark>. Sure enough, he promptly gave me some advices:
 
     <ul>
-        <li><mark>Use another linker called <b>Crinkler</b></mark></li>
         <li><mark>Move structs in the <i>BSS</i></mark></li>
+        <li><mark>Use another linker called <b>Crinkler</b></mark></li>
     </ul>
 
     Thanks Dave!
     
     <h3>4.1. Avoiding the stack</h3>
-    Generally speaking, moving a struct from the stack to the <i>BSS</i> or the <i>data</i> section generates a smaller binary. This is because if you initialize a struct in the stack, a <code>MOV</code> instruction has to be used to fill each struct's field and this takes quite some space.<br>
+    Generally speaking, moving a struct from the stack to the <i>BSS</i> or the <i>data</i> section generates a smaller binary. This is because if you initialize a struct in the stack, a <code>MOV</code> instruction has to be used to fill each struct's field and this takes quite some space. On the other hand, if the struct is stored in the BSS or the data section, the whole section is just copied in memory in one go when the executable starts.<br>
     I immediately moved the <code>WNDCLASSEX</code> in the global scope. This saved a bunch of bytes (I can't remember exactly how many).
 
     <h3>4.2. Using Crinkler</h3>
