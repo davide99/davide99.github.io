@@ -1,0 +1,11 @@
+<script>
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+
+    if (urlParams.has('id')) {
+        document.writeln(urlParams.get('id'));
+    } else {
+        console.log(window.location.host);
+        //window.location.replace(window.location.host);
+    }
+</script>
