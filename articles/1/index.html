@@ -15,14 +15,16 @@
 
     var request = new XMLHttpRequest();
 
+    document.open();
     pages.forEach(function(entry) {
         request.open("GET", entry, true);
         request.send(null);
         request.onreadystatechange = function() {
         if (request.readyState == 4)
             console.log(entry);
-            document.body.innerHTML += request.responseText;
+            document.write(request.responseText);
         };
     });
+    document.close();
     
 </script>
