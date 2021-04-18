@@ -1,0 +1,8 @@
+<script>
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+
+    if (urlParams.has('article')) {
+        document.writeln(urlParams.get('article'));
+    }
+</script>
