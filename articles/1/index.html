@@ -40,6 +40,10 @@
         const last_page = 5;
         var page = 0;
 
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has("page"))
+            page = parseInt(urlParams.get("page"));
+
         function nextPage() {
             if (page === last_page)
                 page = 0;
