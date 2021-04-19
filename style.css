@@ -6,6 +6,7 @@ body {
     margin: 0 auto;
     background: #F5F5F0;
     text-align: justify;
+    margin-bottom: 2em;
 }
 
 li {
@@ -66,3 +67,19 @@ blockquote {
     border-left: 3px solid #ccc;
     font-style: italic;
 } 
+
+#navigation-bar {
+    margin-top: 2em;
+}
+
+#navigation-bar > hr {
+    margin-bottom: 1em;
+}
+
+#navigation-bar > #navigate-left {
+    float: left;
+}
+
+#navigation-bar > #navigate-right {
+    float: right;
+}
