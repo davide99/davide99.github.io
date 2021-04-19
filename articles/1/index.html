@@ -34,7 +34,7 @@
         <source type="video/mp4" src="img/challenge_accepted.mp4">
     </video>
 
-    <b>TL;DR</b>: Jump to the <a href="#conclusions">last section</a>
+    <b>TL;DR</b>: Jump to the <a href="#" onclick="page=last_page;showPage();">last section</a>
 
     <script>
         const last_page = 5;
@@ -518,7 +518,7 @@
         I made a <a href="files/minhw.zip">zip</a> that you can use to compile your own 874 bytes executable. To use it:
         <ol>
             <li>Extract the zip somewhere</li>
-            <li>Find <code>kernel32.lib</code> as discussed <a href="#kernel32_path">here</a> and edit <code>build.bat</code> accordingly</li>
+            <li>Find <code>kernel32.lib</code> as discussed in the <a href="#" onclick="page--;showPage();">previous section</a> and edit <code>build.bat</code> accordingly</li>
             <li>Make sure you have Visual Studio with MSVC + Windows 10 SDK installed</li>
             <li>Search on your computer <i>x86 Native Tools Command Prompt for VS 2019</i> or <i>x64_x86 Cross Tools Command Prompt for VS 2019</i> if you want to cross comiple on an x86_64 system</li>
             <li><code>cd</code> into the directory where you extracted the zip</li>
