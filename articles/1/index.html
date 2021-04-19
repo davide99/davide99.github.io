@@ -60,12 +60,10 @@
 
         function showPage() {
             Array.from(document.getElementsByClassName("page")).forEach(function(element, index, array) {
-                if(index === page) {
+                if(index === page)
                     element.style.display = "block";
-                    window.history.pushState("", "", '?page=' + index);
-                } else {
+                else
                     element.style.display = "none";
-                }
             });
         }
 
