@@ -6,9 +6,43 @@
     <link rel="stylesheet" href="../../style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <script src="../../js/position_hack.js"></script>
-    <script src="../../js/pager.js"></script>
     <script>
-        initPager(0, 5);
+        var page = 0;
+        const last_page = 5;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has("page"))
+            page = parseInt(urlParams.get("page"));
+
+        function nextPage() {
+            if (page === last_page)
+                page = 0;
+            else
+                page++;
+        }
+
+        function prevPage() {
+            if (page === 0)
+                page = last_page;
+            else
+                page--;
+        }
+
+        function showPage() {
+            Array.from(document.getElementsByClassName("page")).forEach(function(element, index, array) {
+                if(index === page) {
+                    element.style.display = "block";
+                    if(index !== 0)
+                        window.history.pushState({page: index}, "", "?page=" + index);
+                } else {
+                    element.style.display = "none";
+                }
+            });
+        }
+
+        window.addEventListener("DOMContentLoaded", function(event) {
+            showPage();
+        });
     </script>
 </head>
 
@@ -24,7 +58,7 @@
     <b>TL;DR</b>: Jump to the <a href="#" onclick="page=last_page;showPage();">last section</a>
 
     <div id="page0" class="page">
-        <h2>0. The main idea</h2><hr>
+        <h2>0. The main idea</h2>
         1448 byte is pretty damn good, but can we do better? A big amount of space in an executable is usually wasted by:
         <ol>
             <li>Strings</li>
@@ -39,7 +73,7 @@
     </div>
 
     <div id="page1" class="page">
-        <h2>1. Finding <code>kernel32.dll</code> base address</h2><hr>
+        <h2>1. Finding <code>kernel32.dll</code> base address</h2>
         In Win32, as soon as you can use a couple of APIs exported by <code>kernel32.dll</code> you can do virtually everything (I'm talking about <code>LoadLibrary</code> and <code>GetProcAddress</code>).<br>
         <code>kernel32.dll</code> is automatically loaded in each Windows' process address space, right before being executed. This means that, technically, we should be able to poke around in the process address space to find the <code>kernel32.dll</code> APIs that we need.
         
@@ -147,7 +181,7 @@ void initAPI(...) {
     </div>
 
     <div id="page2" class="page">
-        <h2>2. Parsing the export tables</h2><hr>
+        <h2>2. Parsing the export tables</h2>
         Now you might ask, what's the point of knowing a DLL base address? Well, <mark>given a DLL base address, we can:</mark>
         <ol>
             <li><mark>Parse the DLL headers</mark></li>
@@ -367,7 +401,7 @@ void findFunc(uintptr_t dllBase, uint32_t* hashes, void** ptrs, size_t size) {
     </div>
 
     <div id="page3" class="page">
-        <h2>3. Producing a small executable</h2><hr>
+        <h2>3. Producing a small executable</h2>
         <h3>3.1. Visual Studio configuration</h3>
         Clearly, we might want to tweak MSVC and the linker to produce a small binary. I made a new configuration called "MinRel" based on the standard "Release" one. After playing around with the configuration I ended up with these command line parameters:<br>
         <h4>Compiler</h4>
@@ -412,7 +446,7 @@ void findFunc(uintptr_t dllBase, uint32_t* hashes, void** ptrs, size_t size) {
     </div>
 
     <div id="page4" class="page">
-        <h2>4. Asking DavePl</h2><hr>
+        <h2>4. Asking DavePl</h2>
         Here comes the point when I asked for help. I reached Dave Plummer himself to tell him about my final EXE size and ask him if he knew <mark>other ways to reduce the size</mark>. Sure enough, he promptly gave me some pieces of advice:
 
         <ul>
@@ -458,7 +492,7 @@ void findFunc(uintptr_t dllBase, uint32_t* hashes, void** ptrs, size_t size) {
     </div>
 
     <div id="page5" class="page">
-        <h2 id="conclusions">5. Conclusions</h2><hr>
+        <h2>5. Conclusions</h2>
         The final size is:
         <p style="font-size: 2em; font-weight: bold; text-align: center; text-decoration: underline;">874 bytes</p>
         <img src="img/size2.webp" loading="lazy" style="width: 90%;">
@@ -493,7 +527,6 @@ void findFunc(uintptr_t dllBase, uint32_t* hashes, void** ptrs, size_t size) {
     </div>
 
     <div id="navigation-bar">
-        <hr>
         <a href="#" onclick="prevPage();showPage();" id="navigate-left">&lt;&lt; Previous</a>
         <a href="#" onclick="nextPage();showPage();" id="navigate-right">Next &gt;&gt;</a>
     </div>

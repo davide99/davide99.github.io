@@ -52,16 +52,21 @@ h2{
     margin-bottom: 0;
 }
 
+h2:after {
+    content:'';
+    background: linear-gradient(to right, #777, #333, #777);
+    display: block;
+    height:1px;
+    width: 900px;
+    bottom: 0;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
 h3{
     font-family: 'Arimo', sans-serif;
     margin-top: 1.5em;
     margin-bottom: 0.5em;
-}
-
-hr {
-    border: 0;
-    height: 1px;
-    background-image: linear-gradient(to right, #777, #333, #777);
 }
 
 code{
@@ -97,6 +102,17 @@ blockquote {
 
 #navigation-bar {
     margin-top: 2em;
+}
+
+#navigation-bar:before {
+    content:'';
+    background: linear-gradient(to right, #777, #333, #777);
+    display: block;
+    height:1px;
+    width: 900px;
+    bottom: 0;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
 }
 
 #navigation-bar > hr {
