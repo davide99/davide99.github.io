@@ -1,0 +1,95 @@
+<html>
+<head>
+    <title>The puzzling MQ-x sensor series</title>
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="../../style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <script src="../../js/position_hack.js"></script>
+    <script>
+        var page = 0;
+        const last_page = 5;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has("page"))
+            page = parseInt(urlParams.get("page"));
+
+        function nextPage() {
+            if (page === last_page)
+                page = 0;
+            else
+                page++;
+        }
+
+        function prevPage() {
+            if (page === 0)
+                page = last_page;
+            else
+                page--;
+        }
+
+        function showPage() {
+            Array.from(document.getElementsByClassName("page")).forEach(function(element, index, array) {
+                if(index === page) {
+                    element.style.display = "block";
+                    if(index !== 0)
+                        window.history.pushState({page: index}, "", "?page=" + index);
+                } else {
+                    element.style.display = "none";
+                }
+            });
+        }
+
+        window.addEventListener("DOMContentLoaded", function(event) {
+            showPage();
+        });
+    </script>
+</head>
+
+<body>
+    <h1>The puzzling MQ-x sensor series</h1>
+
+    When choosing a gas sensor, there's nothing as cheap as an MQ-x series sensor. I decided to buy (for an incoming project) an MQ-7 and an MQ-135 for a grand total of 4.78&euro;. Let's see if I can make them work.
+
+    <div id="page0" class="page">
+        <h2>0. The working principle</h2>
+        
+        The MQ-7 sensitive layer is made of \(SnO_2\). In the presence of \(CO\) (the gas concentration we want to measure) the following reaction happens:
+        \[{SnO_2}_{(s)} + 2CO_{(g)} \rightleftharpoons Sn_{(s)} + {2CO_2}_{(g)}\]
+
+        This means that the more \(CO\) in the air, the more \(SnO_2\) gets converted to \(Sn\). I'm not a chemist, but usually the purer a metal is, the lower is its resistivity. In layman's terms: when the concentration of \(CO\) raises, the sensor sensitive layer resistance lowers.
+        <br><br>
+        The problem now is: what happens when all the \(SnO_2\) is consumed? Keep in mind that the previous reaction has double-sided arrow so the reaction is reversibile. Chemists defined the so-called <i>equilibrium constant</i> \(K_c\). When \(K_c>>1\) the reaction equilibrium is shifted to the right side of the equation, meaning that the predominant reaction is the one that gives us the products. The opposite happens if \(K_c&lt;&lt;1\). With this reaction we are in the first case meaning that:
+        <ul>
+            <li>\(SnO_2\) is converted (with no effort) to \(Sn\)</li>
+            <li>To reverse the reaction, we need to expend energy</li>
+        </ul>
+        And that's where another component of the sensor comes in handy: the heater. Again, I'm not a chemist, so don't quote me on this, but I think that the heater is used to rise the sensor internal temperature, so that the \(Sn\) is converted back to \(SnO_2\).
+        This is, in fact, supported by the fifth figure in the <a href="img/MQ-7.pdf">datasheet</a>:
+        <img src="img/fig5.webp" loading="lazy" style="width: 90%;">
+        <ol>
+            <li>Heat the heater at \(5V\)</li>
+            <li>Wait \(60s\)</li>
+            <li>Drop the heater voltage at \(1.4V\)</li>
+            <li>Keep the heater voltage steady for \(90s\)</li>
+            <li>Read the sensor resistance right before the end of the \(90s\)-period</li>
+        </ol>
+    </div>
+
+    <div id="page1" class="page">
+        <h2>1. Finding <code>kernel32.dll</code> base address</h2>
+    </div>
+
+    <div id="navigation-bar">
+        <a href="#" onclick="prevPage();showPage();" id="navigate-left">&lt;&lt; Previous</a>
+        <a href="#" onclick="nextPage();showPage();" id="navigate-right">Next &gt;&gt;</a>
+    </div>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/languages/c.min.js"></script>
+    <script>hljs.highlightAll();</script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html>
