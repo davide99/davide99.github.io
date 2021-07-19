@@ -8,7 +8,9 @@
     <script src="../../js/position_hack.js"></script>
     <script src="../../js/page_manager.js"></script>
     <script>
-        const pm = new PageManager(1);
+        document.addEventListener('DOMContentLoaded', function() {
+            window.pm = new PageManager(1);
+        }, false);
     </script>
 </head>
 
