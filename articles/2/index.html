@@ -59,19 +59,23 @@
 
         This means that the more \(CO\) in the air, the more \(SnO_2\) gets converted to \(Sn\). I'm not a chemist, but usually the purer a metal is, the lower is its resistivity. In layman's terms: when the concentration of \(CO\) raises, the sensor sensitive layer resistance lowers.
         <br><br>
-        The problem now is: what happens when all the \(SnO_2\) is consumed? Keep in mind that the previous reaction has double-sided arrow so the reaction is reversibile. Chemists defined the so-called <i>equilibrium constant</i> \(K_c\). When \(K_c>>1\) the reaction equilibrium is shifted to the right side of the equation, meaning that the predominant reaction is the one that gives us the products. The opposite happens if \(K_c&lt;&lt;1\). With this reaction we are in the first case meaning that:
+        The problem now is: what happens when all the \(SnO_2\) gets converted to \(Sn\)? Notice the double-sided arrow in the previous reaction, because it means it's reversibile.
+        <br>
+        Chemists defined the so-called <i>equilibrium constant</i> \(K_c\). When \(K_c>>1\) the reaction equilibrium is shifted to the right side of the equation, meaning that the predominant reaction is the one that gives us the products. The opposite happens if \(K_c&lt;&lt;1\). With this reaction we are in the first case, meaning that:
         <ul>
             <li>\(SnO_2\) is converted (with no effort) to \(Sn\)</li>
             <li>To reverse the reaction, we need to expend energy</li>
         </ul>
-        And that's where another component of the sensor comes in handy: the heater. Again, I'm not a chemist, so don't quote me on this, but I think that the heater is used to rise the sensor internal temperature, so that the \(Sn\) is converted back to \(SnO_2\).
+        That's where another sensor's element comes in handy: the heater. Again, I'm not a chemist, so don't quote me on this, but rising the sensor internal temperature means (probably) reversing the reaction, converting \(Sn\) back to \(SnO_2\).
         This is, in fact, supported by the fifth figure in the <a href="img/MQ-7.pdf">datasheet</a>:
         <img src="img/fig5.webp" loading="lazy" style="width: 90%;">
+
+        To sum up, we need to:
         <ol>
             <li>Heat the heater at \(5V\)</li>
-            <li>Wait \(60s\)</li>
+            <li>Wait \(60s\) to &quot;clean&quot; the sensor</li>
             <li>Drop the heater voltage at \(1.4V\)</li>
-            <li>Keep the heater voltage steady for \(90s\)</li>
+            <li>Keep that voltage steady for \(90s\)</li>
             <li>Read the sensor resistance right before the end of the \(90s\)-period</li>
         </ol>
     </div>
