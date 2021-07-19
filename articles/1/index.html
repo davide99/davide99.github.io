@@ -35,7 +35,7 @@
                     if(index !== 0)
                         window.history.pushState({page: index}, "", "?page=" + index);
                     else
-                        window.location.href.substring(0, window.location.href.lastIndexOf('?'));
+                        window.history.pushState({}, "", window.location.href.substring(0, window.location.href.lastIndexOf('?')));
                 } else {
                     element.style.display = "none";
                 }
