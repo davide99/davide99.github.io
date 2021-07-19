@@ -82,6 +82,8 @@ img, video {
     display: block;
     padding: 2em;
     margin: 0 auto;
+    height: auto;
+    width: 100%;
 }
 
 @media (max-width: 500px) { /* For small screen decices */
