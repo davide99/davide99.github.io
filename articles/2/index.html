@@ -84,30 +84,32 @@
 
     <div id="page1" class="page">
         <h2>1. The dual voltage problem</h2>
-        The first problem we need to solve is the dual \(5V-1.4V\) voltage requirement of the heater. People decided to solve this issue in the following ways:
+        The first problem we need to face is the heater dual \(5V-1.4V\) voltage requirement. People decided to solve this issue by:
         <ol>
-            <li>Using the <i>ostrich attitude</i>, by continuously providing \(5V\) to the heater &#x274C;</li>
-            <li>Generate a PWM signal with Arduino at \(1.4V\) &#x274C;</li>
-            <li>Use a voltage divider and transistor to short-circuit one of the divider's resistors &#x2714;</li>
+            <li>
+                &#x274C; Using the <i>ostrich attitude</i>, <b>continuously providing \(5V\) to the heater</b>. 
+                This is just utterly wrong: they are violating the sensor specs and that's bad.
+            </li>
+            <li>
+                &#x274C; Generate a <b>PWM signal at \(1.4V\)</b> with Arduino.
+                This is not wrong per se, but you need to be very careful if you choose this option because:
+                <ul>
+                    <li>The heater consumes \(70mA\) at \(5V\) and Arduino can't stand this much current</li>
+                    <li>The heater needs a steady voltage, so the the PWM signal needs to be filtered</li>
+                </ul>
+            </li>
+            <li>&#x2714; Use a custom circuit to switch between the two voltages</li>
         </ol>
 
-        <h3>1.1. The ostrich approach</h3>
-        The first way is just utterly wrong: by doing that, you are just violating the sensor specs and that's bad.
-        <h3>1.2. The second approach</h3>
-        What about the <b>second</b> one? Well, it's not wrong per se, but you need to be very careful if you choose this option because:
-        <ul>
-            <li>At \(5V\) the heater consumes \(70mA\) and, for sure, Arduino can't stand this much current</li>
-            <li>The heater needs a steady voltage, so you probably need to filter the PWM signal</li>
-        </ul>
-        <h3>1.3. The real solution</h3>
+        <h3>1.1. The real solution</h3>
         <img src="img/divider.svg" loading="lazy" style="float:right;width:45%;">
         We can grab the \(5V\) from the same power supply used for the Arduino, but what about the \(1.4V\) voltage? We can use a voltage divider:
-        \[5V\frac{R_2}{R_1+R_2}=1.4V \Longrightarrow \frac{R_1}{R_2}\approx 2.57\]
+        \[5V\frac{R_2}{R_1+R_2}=V_H=1.4V \Longrightarrow \frac{R_1}{R_2}\approx 2.57\]
         We know, from the <a href="img/MQ-7.pdf">datasheet</a>, that the heater has a resistance of \(33\Omega\). Hence, if we choose \(R_2=33\Omega\):
         \[R_1=2.57\cdot33\Omega\approx 85\Omega\]
-        Which can be approximated to the closest standard value of \(82\Omega\). If we hook the sensor to the \(1.4V\) everything is fine. But we also need \(5V\)! The solution is to simply short-circuit \(R_1\) with a transistor. We can use an nMOS transistor since it has a much smaller \(R_{DS}\) than a BJT.
-        <br>
-        Everything is now fine, but we might want to switch the MOSFET on and off both from a \(5V\) board and a \(3.3V\) one. Unless we use some particular (read more expensive) MOSFET, we need a BJT, obtaining the circuit in the figure.
+        Which can be approximated to the closest standard value of \(82\Omega\). We also need \(V_H=5V\)! The solution is to simply short-circuit \(R_1\) with a transistor. We can use an nMOS since it has a much smaller \(R_{DS}\) than a BJT.
+        <br><br>
+        Now everything is fine, but we might want to switch the MOSFET on and off both from a \(5V\) board and a \(3.3V\) one. Unless we use some particular (read more expensive) MOSFET, we need a BJT, obtaining the circuit in the figure.
         I also added \(R_4\) to limit the base current of the BJT and \(R_3\) as a pullup resistor.
         <br><br>
         To sum up:
