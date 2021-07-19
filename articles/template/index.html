@@ -1,0 +1,75 @@
+<html>
+<head>
+    <title>The puzzling MQ-x sensor series</title>
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="../../style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <script src="../../js/position_hack.js"></script>
+    <script>
+        var page = 0;
+        const last_page = 5;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has("page"))
+            page = parseInt(urlParams.get("page"));
+
+        function nextPage() {
+            if (page === last_page)
+                page = 0;
+            else
+                page++;
+        }
+
+        function prevPage() {
+            if (page === 0)
+                page = last_page;
+            else
+                page--;
+        }
+
+        function showPage() {
+            Array.from(document.getElementsByClassName("page")).forEach(function(element, index, array) {
+                if(index === page) {
+                    element.style.display = "block";
+                    if(index !== 0)
+                        window.history.pushState({page: index}, "", "?page=" + index);
+                } else {
+                    element.style.display = "none";
+                }
+            });
+        }
+
+        window.addEventListener("DOMContentLoaded", function(event) {
+            showPage();
+        });
+    </script>
+</head>
+
+<body>
+    <h1>The puzzling MQ-x sensor series</h1>
+
+    <b>TL;DR</b>: Jump to the <a href="#" onclick="page=last_page;showPage();">last section</a>
+
+    <div id="page0" class="page">
+        <h2>0. The main idea</h2>
+        
+    </div>
+
+    <div id="page1" class="page">
+        <h2>1. Finding <code>kernel32.dll</code> base address</h2>
+    </div>
+
+    <div id="navigation-bar">
+        <a href="#" onclick="prevPage();showPage();" id="navigate-left">&lt;&lt; Previous</a>
+        <a href="#" onclick="nextPage();showPage();" id="navigate-right">Next &gt;&gt;</a>
+    </div>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/languages/c.min.js"></script>
+    <script>hljs.highlightAll();</script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html>
