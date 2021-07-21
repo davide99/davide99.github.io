@@ -35,7 +35,7 @@ class PageManager {
     _showPage() {
         var pm = this;
 
-        Array.from(document.getElementsByClassName("page")).forEach(function(element, index, array) {
+        Array.from(document.getElementsByClassName("page")).forEach(function(element, index) {
             if(index === pm.page) {
                 element.style.display = "block";
                 if(index !== 0)
