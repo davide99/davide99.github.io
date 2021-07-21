@@ -10,7 +10,7 @@
     <script src="../../js/position_hack.js"></script>
     <script src="../../js/page_manager.js"></script>
     <script>
-        const pm = new PageManager(1);
+        const pm = new PageManager(2);
     </script>
 </head>
 
@@ -85,6 +85,19 @@
             <li>When the input is <b>high</b>, \(Q_1\) is &quot;on&quot;, \(M_1\) drain is held low, \(M_1\) is &quot;off&quot;, \(V_H=1.4V\)</li>
             <li>When the input is <b>low</b>, \(Q_1\) is &quot;off&quot;, \(M_1\) drain is held high, \(M_1\) is &quot;on&quot;, \(V_H=5V\)</li>
         </ul>
+    </div>
+
+    <div id="page2" class="page">
+        <h2>2. Throwing the module away</h2>
+        Another problem we need to address is the sensor PCB: it's just bad. Have a look:
+        <img src="img/module_circ.webp" loading="lazy" style="width:100%" alt="module circuit">
+        <img src="img/module.webp" loading="lazy" style="float:right;width:20%;" alt="module">
+        Everything on the right side of \(R_2\) is useless: \(U1A\) is a comparator which drives \(DOUT\) high or low, depending on the adjustable voltage on the \(+\) pin. On \(DOUT\) there's also an LED because why not?
+        <br>
+        The \(VCC\) wirings make this design even worse. Notice how \(VCC\) is used for: the heater, the comparator voltage reference, the comparator supply. Now keep in mind that the heater voltage needs to change between \(1.4V\) and \(5V\), hence \(VCC\) changes between \(1.4V\) and \(5V\), meaning that the comparator voltage reference and supply change over time.
+        <br><br>
+        Outraged, I decided to simply desolder the sensor.
+        If you decide to follow my same path please be cautious not to overheat the sensor with your soldering iron.
     </div>
 
     <div id="navigation-bar">
