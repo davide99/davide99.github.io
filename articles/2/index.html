@@ -10,7 +10,7 @@
     <script src="../../js/position_hack.js"></script>
     <script src="../../js/page_manager.js"></script>
     <script>
-        const pm = new PageManager(2);
+        const pm = new PageManager(3);
     </script>
 </head>
 
@@ -98,6 +98,18 @@
         <br><br>
         Outraged, I decided to simply desolder the sensor.
         If you decide to follow my same path please be cautious not to overheat the sensor with your soldering iron.
+    </div>
+
+    <div id="page3" class="page">
+        <h2>3. Testing the new driver</h2>
+        This is what I ended up with:
+        <img src="img/breadboard.webp" loading="lazy" style="width:80%" alt="breadboard circuit">
+        To calibrate the \(1.4V\) voltage:
+        <ol>
+            <li>Measure the voltage between the sensor heater terminals</li>
+            <li>Move the \(IN\) jumper to \(5V\)</li>
+            <li>Rotate the trimmer to adjust the voltage at around \(1.4V\)</li>
+        </ol>
     </div>
 
     <div id="navigation-bar">
