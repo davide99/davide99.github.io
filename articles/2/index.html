@@ -22,7 +22,7 @@
     <div id="page0" class="page">
         <h2>0. The working principle</h2>
 
-        <img src="img/mq7.svg" loading="lazy" style="float:right;width:15em;" alt="MQ-7 sensor">
+        <img src="img/mq7.svg" loading="lazy" width=53 height=54 style="float:right;width:20%;" alt="MQ-7 sensor">
         
         The MQ-7 sensitive layer is made of \(SnO_2\). In the presence of \(CO\) (the gas concentration we want to measure) the following reaction happens:
         \[{SnO_2}_{(s)} + 2CO_{(g)} \rightleftharpoons Sn_{(s)} + {2CO_2}_{(g)}\]
@@ -70,7 +70,7 @@
         </ol>
 
         <h3>1.1. The real solution</h3>
-        <img src="img/divider.svg" loading="lazy" style="float:right;width:30em;" alt="driver circuit">
+        <img src="img/divider.svg" loading="lazy" width=161 height=91 style="float:right;width:55%;" alt="driver circuit">
         We can grab the \(5V\) from the same power supply used for the Arduino, but what about the \(1.4V\) voltage? We can use a voltage divider:
         \[5V\frac{R_2}{R_1+R_2}=V_H=1.4V \Longrightarrow \frac{R_1}{R_2}\approx 2.57\]
         We know, from the <a href="img/MQ-7.pdf">datasheet</a>, that the heater has a resistance of \(33\Omega\). Hence, if we choose \(R_2=33\Omega\):
@@ -90,8 +90,8 @@
     <div id="page2" class="page">
         <h2>2. Throwing the PCB away</h2>
         Another problem we need to address is the sensor PCB: it's just bad (remember the <i>ostrich attitude</i>?). Have a look:
-        <img src="img/module_circ.webp" loading="lazy" style="width:50vw;height:auto" alt="module circuit">
-        <img src="img/module.webp" loading="lazy" style="float:right;width:20%;" alt="module">
+        <img src="img/module_circ.webp" loading="lazy" width=1227 height=544 style="width:90%" alt="module circuit">
+        <img src="img/module.webp" loading="lazy" width=300 height=267 style="float:right;width:20%;" alt="module">
         Everything on the right side of \(R_2\) is useless: \(U1A\) is a comparator which drives \(DOUT\) high or low, depending on the adjustable voltage on the \(+\) pin. On \(DOUT\) there's also an LED because why not?
         <br>
         The \(VCC\) wirings make this design even worse. Notice how \(VCC\) is used for the heater, the comparator voltage reference and the comparator supply. Now keep in mind that the heater voltage needs to change between \(1.4V\) and \(5V\), hence \(VCC\) changes between \(1.4V\) and \(5V\), meaning that the comparator voltage reference and supply both change over time.
@@ -103,7 +103,7 @@
     <div id="page3" class="page">
         <h2>3. Testing the new driver</h2>
         This is what I ended up with:
-        <img src="img/breadboard.webp" loading="lazy" style="width:80%" alt="breadboard circuit">
+        <img src="img/breadboard.webp" loading="lazy" width=700 height=432 style="width:80%" alt="breadboard circuit">
         To calibrate the \(1.4V\) voltage:
         <ol>
             <li>Measure the voltage between the sensor heater terminals</li>
