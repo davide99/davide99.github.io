@@ -77,7 +77,7 @@
         \[R_1=2.57\cdot33\Omega\approx 85\Omega\]
         Which can be approximated to the closest standard value of \(82\Omega\). We also need \(V_H=5V\)! The solution is to simply short-circuit \(R_1\) with a transistor. We can use an nMOS since it has a much smaller \(R_{DS}\) than a BJT.
         <br><br>
-        Now everything is fine, but we might want to switch the MOSFET on and off both from a \(5V\) board and a \(3.3V\) one. Unless we use some particular (read more expensive) MOSFET, we need a BJT, obtaining the circuit in the figure.
+        Now everything is fine, but we might want to switch the MOSFET on and off both from a \(5V\) board and a \(3.3V\) one. We need a BJT, obtaining the circuit in the figure.
         I also added \(R_4\) to limit the base current of the BJT and \(R_3\) as a pullup resistor.
         <br><br>
         To sum up:
@@ -94,7 +94,7 @@
         <img src="img/module.webp" loading="lazy" style="float:right;width:20%;" alt="module">
         Everything on the right side of \(R_2\) is useless: \(U1A\) is a comparator which drives \(DOUT\) high or low, depending on the adjustable voltage on the \(+\) pin. On \(DOUT\) there's also an LED because why not?
         <br>
-        The \(VCC\) wirings make this design even worse. Notice how \(VCC\) is used for: the heater, the comparator voltage reference, the comparator supply. Now keep in mind that the heater voltage needs to change between \(1.4V\) and \(5V\), hence \(VCC\) changes between \(1.4V\) and \(5V\), meaning that the comparator voltage reference and supply change over time.
+        The \(VCC\) wirings make this design even worse. Notice how \(VCC\) is used for the heater, the comparator voltage reference and the comparator supply. Now keep in mind that the heater voltage needs to change between \(1.4V\) and \(5V\), hence \(VCC\) changes between \(1.4V\) and \(5V\), meaning that the comparator voltage reference and supply both change over time.
         <br><br>
         Outraged, I decided to simply desolder the sensor.
         If you decide to follow my same path please be cautious not to overheat the sensor with your soldering iron.
