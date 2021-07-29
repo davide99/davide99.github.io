@@ -121,9 +121,12 @@
         \]
         We actually need another piece of the puzzle to understand how \(R_S\) is related to the \(CO\) concentration. To do so, have a look at fig. 3 of the <a href="img/MQ-7.pdf">datasheet</a>.<br>
         <img src="img/curves.webp" loading="lazy" width=801 height=703 style="width:50%;float:left" alt="concentration plot">
-        Knowing the ratio \(\frac{R_S}{R_0}\), the plot tell us the concentration of a gas in ppm.
-        \(R_S\) changes according to the concentration, on the other hand \(R_0\) is fixed and can be defined as the resistance of the sensor @ 100ppm of \(CO\).<br>
-        This definition is not so useful: we don't have a 100 ppm \(CO\) sample. Instead, if we look at the brown line, we can find the (quite) precise value of \(\frac{R_S}{R_0}\) in clean air (using <a href="https://apps.automeris.io/wpd/">WebPlotDigitizer</a>) to be \(\approx 25.95\). This means that if we find \(R_S\) in clear air, we can calculate \(R_S\) as:
+        Knowing the ratio \(\frac{R_S}{R_0}\), the plot tell us the concentration of a gas in ppm, where:
+        <ul style="list-style: inside;">
+            <li>\(R_S\) changes according to the gas concentration</li>
+            <li>\(R_0\) is fixed and can be defined as the resistance of the sensor @ 100ppm of \(CO\)</li>
+        </ul>
+        The \(R_0\) definition is not so useful: we don't have a 100 ppm \(CO\) sample. Instead, if we look at the brown line, we can find the (quite) precise value of \(\frac{R_S}{R_0}\) in clean air (using <a href="https://apps.automeris.io/wpd/">WebPlotDigitizer</a>) to be \(\approx 25.95\). This means that if we find \(R_S\) in clear air, we can calculate \(R_S\) as:
         \[R_0=\frac{R_0}{25.95}\]
     </div>
 
