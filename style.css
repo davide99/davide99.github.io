@@ -129,6 +129,8 @@ blockquote {
     float: right;
 }
 
-.page {
-    overflow: auto;
+.page::after {
+    content: "";
+    clear: both;
+    display: table;
 }

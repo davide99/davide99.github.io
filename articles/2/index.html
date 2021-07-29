@@ -10,7 +10,7 @@
     <script src="../../js/position_hack.js"></script>
     <script src="../../js/page_manager.js"></script>
     <script>
-        const pm = new PageManager(4);
+        const pm = new PageManager(5);
     </script>
 </head>
 
@@ -101,7 +101,7 @@
     </div>
 
     <div id="page3" class="page">
-        <h2>3. Testing the new driver</h2>
+        <h2>3. Testing the new driver &amp; preheating</h2>
         This is what I ended up with:
         <img src="img/breadboard.webp" loading="lazy" width=700 height=432 style="width:80%" alt="breadboard circuit">
         To calibrate the \(1.4V\) voltage:
@@ -110,17 +110,18 @@
             <li>Move the \(IN\) jumper to \(5V\)</li>
             <li>Rotate the trimmer to adjust the voltage at around \(1.4V\)</li>
         </ol>
+        Now the moment had come to let the sensor preheat for the first time. This is really advised by the datasheet to &quot;clean&quot; the sensor: just hook a \(5V\) power supply to the heater pins and wait for 48h.
     </div>
 
     <div id="page4" class="page">
-        <h2>4. Find \(R_S\) and \(R_0\)</h2>
+        <h2>4. \(R_S\) and \(R_0\) definitions</h2>
         <img src="img/series.svg" loading="lazy" width=223 height=739 style="width:10%;float:right" alt="series circuit">
         As we were discussing at <a href="#" onclick="pm.gotoPage(0);">page 0</a>, we need to measure the sensor resistance \(R_S\). We can't directly measure a resistance with an Arduino, but only voltages. Notice how the sensor \(R_S\) can be wired in series to \(R_L\), hence, if we know \(V_{CC}\), \(R_L\) and \(V_{R_L}\), we can find the value of \(R_S\) as follows:
         \[
             V_{R_L}=V_{CC}\frac{R_L}{R_S+R_L} \Rightarrow R_S=\left(\frac{V_{CC}}{V_{R_L}}-1\right)R_L
         \]
         We actually need another piece of the puzzle to understand how \(R_S\) is related to the \(CO\) concentration. To do so, have a look at fig. 3 of the <a href="img/MQ-7.pdf">datasheet</a>.<br>
-        <img src="img/curves.webp" loading="lazy" width=801 height=703 style="width:50%;float:left" alt="concentration plot">
+        <img src="img/curves.webp" loading="lazy" width=801 height=703 style="width:50%;float:left;" alt="concentration plot">
         Knowing the ratio \(\frac{R_S}{R_0}\), the plot tell us the concentration of a gas in ppm, where:
         <ul style="list-style: inside;">
             <li>\(R_S\) changes according to the gas concentration</li>
@@ -128,7 +129,11 @@
         </ul>
         The \(R_0\) definition is not so useful: we don't have a 100 ppm \(CO\) sample. Instead, if we look at the brown line, we can find the (quite) precise value of \(\frac{R_S}{R_0}\) in clean air (using <a href="https://apps.automeris.io/wpd/">WebPlotDigitizer</a>) to be \(\approx 25.95\). This means that if we find \(R_S\) in clear air, we can calculate \(R_S\) as:
         \[R_0=\frac{R_S}{25.95}\]
-        \[R_0=\frac{R_0}{25.95}\]
+    </div>
+
+    <div id="page5" class="page">
+        <h2>5. Find \(R_0\)</h2>
+        Now that we have defined what \(R_0\) and \(R_S\) 
     </div>
 
     <div id="navigation-bar">
