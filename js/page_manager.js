@@ -32,6 +32,11 @@ class PageManager {
         this._showPage();
     }
 
+    gotoPage(page) {
+        this.page = page;
+        this._showPage();
+    }
+
     _showPage() {
         var pm = this;
 
