@@ -128,3 +128,7 @@ blockquote {
 #navigation-bar > #navigate-right {
     float: right;
 }
+
+.page {
+    overflow: auto;
+}
