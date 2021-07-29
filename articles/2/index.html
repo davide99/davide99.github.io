@@ -10,7 +10,7 @@
     <script src="../../js/position_hack.js"></script>
     <script src="../../js/page_manager.js"></script>
     <script>
-        const pm = new PageManager(5);
+        const pm = new PageManager(6);
     </script>
 </head>
 
@@ -132,7 +132,7 @@
     </div>
 
     <div id="page5" class="page">
-        <h2>5. Find \(R_0\) - Step 1</h2>
+        <h2>5. Find \(R_0\) - Averaging \(A0\)</h2>
         Now that we've defined what \(R_0\) is, we need to find its value.
         <br><br>
         First of all, the datasheet suggests \(R_L=10k\Omega\). Now, take the circuit at <a href="#" onclick="pm.gotoPage(1);">page 1</a> and connect the sensor as seen on <a href="#" onclick="pm.gotoPage(4);">page 4</a>. An overall schema of what we have:
@@ -179,6 +179,37 @@ void loop() {
         Now move the sensor in clean air, power everything up and wait until the mean is printed on the serial monitor. Keep in mind that we are reading the sensor \(100\) times and each cycle lasts \(60s+90s\), hence you'll get the mean after:
         \[(60s+90s)\cdot 100=15000s=4h\,10min\]
         Please be patient &#x1F613;
+    </div>
+
+    <div id="page6" class="page">
+        <h2>6. Find \(R_0\) - \(V_{CC}\), \(R_L\) and \(V_{R_L}\)</h2>
+        <h3>6.1. \(V_{CC}\)</h3>
+        I'm an engineer, and engineers approximate things, but that's not the case. Normally we would say that \(V_{CC}=5.0V\), but (sometimes) Arduino's \(V_{CC}\) can be as high as \(5.4V\). We need to measure it! We can use a sketch that I found (stole) <a href="https://code.google.com/archive/p/tinkerit/wikis/SecretVoltmeter.wiki">here</a>:
+<pre><code>#include &lt;Arduino.h&gt;
+
+long readVcc() {
+    long result;
+
+    // Read 1.1V reference against AVcc
+    ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
+    delay(2); // Wait for Vref to settle
+    ADCSRA |= _BV(ADSC); // Convert
+    while (bit_is_set(ADCSRA, ADSC));
+    result = ADCL;
+    result |= ADCH &lt;&lt; 8;
+    result = 1126400L / result; // Back-calculate AVcc in mV
+    return result;
+}
+
+void setup() {
+    Serial.begin(9600);
+}
+
+void loop() {
+    Serial.println(readVcc(), DEC);
+    delay(1000);
+}</code></pre>
+    Upload the sketch and open the serial monitor: you'll se a value. You than need to divide said value by \(1000\) and you'll find a reasonably accurate \(V_{CC}\) value (in my case \(V_{CC}=\frac{5338mV}{1000}=5.338V\)). Note that down.
     </div>
 
     <div id="navigation-bar">
