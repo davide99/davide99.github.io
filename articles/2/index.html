@@ -132,8 +132,53 @@
     </div>
 
     <div id="page5" class="page">
-        <h2>5. Find \(R_0\)</h2>
-        Now that we have defined what \(R_0\) and \(R_S\) 
+        <h2>5. Find \(R_0\) - Step 1</h2>
+        Now that we have defined what \(R_0\) is we need to find its value.
+        <br><br>
+        First of all, the datasheet suggests \(R_L=10k\Omega\). Now take the circuit at <a href="#" onclick="pm.gotoPage(1);">page 1</a> and connect the sensor as seen on <a href="#" onclick="pm.gotoPage(4);">page 4</a>. An overall schema of what we have:
+        <img src="img/schema.svg" loading="lazy" width=248 height=170 style="width:40%" alt="schema">
+        It's the time to write some code which needs to:
+        <ol>
+            <li>Make \(IN\) low for \(60s\) to heat the heater at \(5V\)</li>
+            <li>Make \(IN\) high for \(90s\) to drop \(V_H\) at \(1.4V\)</li>
+            <li>Read \(A0\)</li>
+            <li>Compute the mean somehow</li>
+            <li>Go to 1</li>
+        </ol>
+        And here is the code:
+        <pre><code>#include &lt;Arduino.h&gt;
+
+float meanA0 = 0;
+const int totReads = 100;
+int curReads = 0;
+
+void setup() {
+    Serial.begin(9600);
+    pinMode(2, OUTPUT); //IN pin
+    pinMode(A0, INPUT); //V_RL pin
+}
+
+void loop() {
+    if (curReads &lt; totReads) {
+        digitalWrite(2, LOW);
+        delay(60000UL); //60s
+        digitalWrite(2, HIGH);
+        delay(90000UL); //90s
+
+        //Read the value
+        meanA0 += static_cast&lt;float&gt;(analogRead(A0))/totReads;
+        curReads++;
+    } else {
+        Serial.print("Mean A0: ");
+        Serial.println(meanA0);
+        delay(1000UL);
+    }
+}</code></pre>
+        So, after the heating cycle, we read \(A0\), cast it to a float, divide it by the total number of reads we are going to make and add it to \(meanA0\). After \(100\) readings we print the final \(A0\) mean indefinitely.
+        <br><br>
+        Now move the sensor in clean air, power everything up and wait until the mean is printed on the serial monitor. Keep in mind that we are reading the sensor \(100\) times and each cycle lasts \(60s+90s\), hence you'll get the mean after:
+        \[(60s+90s)\cdot 100=15000s=250min=4h\,10min\]
+        Please be patient &#x1F613;
     </div>
 
     <div id="navigation-bar">
@@ -141,6 +186,10 @@
         <a href="#" onclick="pm.nextPage();" id="navigate-right">Next &gt;&gt;</a>
     </div>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/languages/c.min.js"></script>
+    <script>hljs.highlightAll();</script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 </body>
