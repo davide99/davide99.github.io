@@ -10,7 +10,7 @@
     <script src="../../js/position_hack.js"></script>
     <script src="../../js/page_manager.js"></script>
     <script>
-        const pm = new PageManager(6);
+        const pm = new PageManager(7);
     </script>
 </head>
 
@@ -182,9 +182,9 @@ void loop() {
     </div>
 
     <div id="page6" class="page">
-        <h2>6. Find \(R_0\) - \(V_{CC}\), \(R_L\) and \(V_{R_L}\)</h2>
-        <h3>6.1. \(V_{CC}\)</h3>
-        I'm an engineer and engineers approximate things, but not today. Normally we would say that \(V_{CC}=5.0V\), but (sometimes) Arduino's \(V_{CC}\) can be as high as \(5.4V\). We need to measure it! We can use a sketch that I found (stole) <a href="https://code.google.com/archive/p/tinkerit/wikis/SecretVoltmeter.wiki">here</a>:
+        <h2>6. Find \(R_0\) - \(V_{CC,A}\), \(R_L\) and \(V_{R_L}\)</h2>
+        <h3>6.1. \(V_{CC,A}\)</h3>
+        I'm an engineer and engineers approximate things, but not today. Normally we would say that \(V_{CC,A}=5.0V\), but (sometimes) Arduino's \(V_{CC,A}\) can be as high as \(5.4V\). We need to measure it! We can use a sketch that I found (stole) <a href="https://code.google.com/archive/p/tinkerit/wikis/SecretVoltmeter.wiki">here</a>:
 <pre><code>#include &lt;Arduino.h&gt;
 
 long readVcc() {
@@ -209,15 +209,29 @@ void loop() {
     Serial.println(readVcc(), DEC);
     delay(1000);
 }</code></pre>
-    Upload the sketch and open the serial monitor: you'll se \(V_{CC}\) in \(mV\). Divide that value by \(1000\) and you'll find a reasonably accurate \(V_{CC}\) value (in my case \(V_{CC}=\frac{5338mV}{1000}=5.338V\)). Note that down.
+    Upload the sketch and open the serial monitor: you'll se \(V_{CC,A}\) in \(mV\). Divide that value by \(1000\) and you'll find a reasonably accurate \(V_{CC,A}\) value (in my case \(V_{CC,A}=\frac{5338mV}{1000}=5.338V\)). Note that down.
     <h3>6.2. \(R_L\)</h3>
     <img src="img/resistor.webp" loading="lazy" width=180 height=300 style="width:10%;float:right" alt="resistor">
     Remember how we choose \(R_L=10k\Omega\)? That was just the nominal value: we need the actual value. Grab a multimeter and measure \(R_L\) (mine is \(9.81k\Omega\)).
     <h3>6.3. \(V_{R_L}\)</h3>
     Hopefully, after \(4h\,10min\), we got our mean \(A0\) printed on the serial monitor: note that down (mine is \(523\)). \(V_{R_L}\) can be found as:
-    \[V_{R_L}=\frac{(meanA0 + \frac{1}{2}) \cdot V_{CC}}{1024}\]
+    \[V_{R_L}=\frac{(meanA0 + \frac{1}{2}) \cdot V_{CC,A}}{1024}\]
     <br><br>
     Turn to the next page to find how to find \(R_0\).
+    </div>
+
+    <div id="page7" class="page">
+        <h2>7. Find \(R_0\) - For real</h2>
+        Now we have everything we need to finally found \(R_0\). To recap:
+        <ol>
+            <li>\(R_S=\left(\frac{V_{CC,S}}{V_{R_L}}-1\right)R_L\)</li>
+            <li>\(R_0=\frac{R_S}{25.95}\)</li>
+            <li>\(V_{R_L}=\frac{(meanA0 + \frac{1}{2}) \cdot V_{CC,A}}{1024}\)</li>
+        </ol>
+        Hence:
+        \[R_0 \overset{\text{(2)}}{=} \frac{R_S}{25.95} \overset{\text{(1)}}{=} \left(\frac{V_{CC,S}}{V_{R_L}}-1\right)\frac{R_L}{25.95} \overset{\text{(3)}}{=} \left(\frac{V_{CC,S}}{V_{CC,A}}\cdot\frac{1024}{\text{meanA0}+0.5}-1\right)\frac{R_L}{25.95}\]
+        In my case, with \(V_{CC,S}=5.1V\), \(V_{CC,A}=5.338V\), \(R_L=9.81k\Omega\), \(\text{meanA0}=523\):
+        \[R_0=328\Omega\]
     </div>
 
     <div id="navigation-bar">
