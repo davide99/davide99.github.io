@@ -115,10 +115,10 @@
 
     <div id="page4" class="page">
         <h2>4. \(R_S\) and \(R_0\) definitions</h2>
-        <img src="img/series.svg" loading="lazy" width=223 height=739 style="width:10%;float:right" alt="series circuit">
-        As we were discussing at <a href="#" onclick="pm.gotoPage(0);">page 0</a>, we need to measure the sensor resistance \(R_S\). We can't directly measure a resistance with an Arduino, but only voltages. Notice how the sensor \(R_S\) can be wired in series to \(R_L\), hence, if we know \(V_{CC}\), \(R_L\) and \(V_{R_L}\), we can find the value of \(R_S\) as follows:
+        <img src="img/series.svg" loading="lazy" width=223 height=768 style="width:10%;float:right" alt="series circuit">
+        As we were discussing at <a href="#" onclick="pm.gotoPage(0);">page 0</a>, we need to measure the sensor resistance \(R_S\). We can't directly measure a resistance with an Arduino, but only voltages. Notice how the sensor \(R_S\) can be wired in series to \(R_L\), hence, if we know \(V_{CC,S}\), \(R_L\) and \(V_{R_L}\), we can find the value of \(R_S\) as follows:
         \[
-            V_{R_L}=V_{CC}\frac{R_L}{R_S+R_L} \Rightarrow R_S=\left(\frac{V_{CC}}{V_{R_L}}-1\right)R_L
+            V_{R_L}=V_{CC,S}\frac{R_L}{R_S+R_L} \Rightarrow R_S=\left(\frac{V_{CC,S}}{V_{R_L}}-1\right)R_L
         \]
         We actually need another piece of the puzzle to understand how \(R_S\) is related to the \(CO\) concentration. To do so, have a look at fig. 3 of the <a href="img/MQ-7.pdf">datasheet</a>.<br>
         <img src="img/curves.webp" loading="lazy" width=801 height=703 style="width:50%;float:left;" alt="concentration plot">
@@ -136,7 +136,7 @@
         Now that we've defined what \(R_0\) is, we need to find its value.
         <br><br>
         First of all, the datasheet suggests \(R_L=10k\Omega\). Now, take the circuit at <a href="#" onclick="pm.gotoPage(1);">page 1</a> and connect the sensor as seen on <a href="#" onclick="pm.gotoPage(4);">page 4</a>. An overall schema of what we have:
-        <img src="img/schema.svg" loading="lazy" width=248 height=170 style="width:40%" alt="schema">
+        <img src="img/schema.svg" loading="lazy" width=250 height=170 style="width:40%" alt="schema">
         It's the time to write some code which needs to:
         <ol>
             <li>Make \(IN\) low for \(60s\) to heat the heater at \(5V\)</li>
@@ -182,8 +182,10 @@ void loop() {
     </div>
 
     <div id="page6" class="page">
-        <h2>6. Find \(R_0\) - \(V_{CC,A}\), \(R_L\) and \(V_{R_L}\)</h2>
-        <h3>6.1. \(V_{CC,A}\)</h3>
+        <h2>6. Find \(R_0\) - \(V_{CC,S}\), \(V_{CC,A}\), \(R_L\) and \(V_{R_L}\)</h2>
+        <h3>6.1. \(V_{CC,S}\)</h3>
+        \(V_{CC,S}\) is just voltage at which one side of the sensor is hooked at. To measure it use a multimeter (in my case it's \(V_{CC,S}=5.1V\)).
+        <h3>6.2. \(V_{CC,A}\)</h3>
         I'm an engineer and engineers approximate things, but not today. Normally we would say that \(V_{CC,A}=5.0V\), but (sometimes) Arduino's \(V_{CC,A}\) can be as high as \(5.4V\). We need to measure it! We can use a sketch that I found (stole) <a href="https://code.google.com/archive/p/tinkerit/wikis/SecretVoltmeter.wiki">here</a>:
 <pre><code>#include &lt;Arduino.h&gt;
 
@@ -210,10 +212,10 @@ void loop() {
     delay(1000);
 }</code></pre>
     Upload the sketch and open the serial monitor: you'll se \(V_{CC,A}\) in \(mV\). Divide that value by \(1000\) and you'll find a reasonably accurate \(V_{CC,A}\) value (in my case \(V_{CC,A}=\frac{5338mV}{1000}=5.338V\)). Note that down.
-    <h3>6.2. \(R_L\)</h3>
+    <h3>6.3. \(R_L\)</h3>
     <img src="img/resistor.webp" loading="lazy" width=180 height=300 style="width:10%;float:right" alt="resistor">
     Remember how we choose \(R_L=10k\Omega\)? That was just the nominal value: we need the actual value. Grab a multimeter and measure \(R_L\) (mine is \(9.81k\Omega\)).
-    <h3>6.3. \(V_{R_L}\)</h3>
+    <h3>6.4. \(V_{R_L}\)</h3>
     Hopefully, after \(4h\,10min\), we got our mean \(A0\) printed on the serial monitor: note that down (mine is \(523\)). \(V_{R_L}\) can be found as:
     \[V_{R_L}=\frac{(meanA0 + \frac{1}{2}) \cdot V_{CC,A}}{1024}\]
     <br><br>
