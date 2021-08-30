@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Music recognition AI</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="Descrizione">
+
+    <link rel="stylesheet" href="../../style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0">
+    <script src="../../js/position_hack.js"></script>
+    <script src="../../js/page_manager.js"></script>
+    <script>
+        //2 = numero ultima pagina
+        const pm = new PageManager(2);
+    </script>
+</head>
+
+<body>
+    <h1>Music recognition AI</h1>
+
+    Intro.
+
+    <div id="page0" class="page">
+        <h2>1. Music and physics</h2>
+
+        A sound is a vibration that propagates through the air and can be understood by ears. MP3 players or computers use headphones or built-in speakers to produce vibrations and make &quot;sounds&quot;. Music is just a kind of signal which can be reproduced using various sinusoidal waveforms and like that must be treated.
+
+        <h3>1.1. Signal scrambling via sines sums</h3>
+        A sine wave is characterized by two parameters:
+        <ul>
+            <li><i>Frequency</i> \(\Longrightarrow\) the number of cycles per unit of time, measured in Hertz</li>
+            <li><i>Amplitude</i> \(\Longrightarrow\) the height of the cycle</li>
+        </ul>
+
+        A generic sine wave is described by the function:
+        \[y(t) = A \cdot \sin(2\pi f t + \varphi)\]
+
+        where:
+
+        <ul>
+            <li>\(A\) is the amplitude</li>
+            <li>\(f\) is the frequency</li>
+            <li>\(t\) is the time</li>
+            <li>\(\varphi\) is the phase</li>
+        </ul>
+
+        <figure style="float:right">
+            <img src="img/fig1.1.svg" loading="lazy" width="47px" height="45px" style="width:100%;" alt="sine wave">
+            <figcaption>Figure 1.1: A 20Hz sine wave</figcaption>
+        </figure>
+
+        In the figure 1.1 the sine wave is described by the function:
+        \[y(t)=1\cdot\sin(2\pi 20 t + 0)=\sin(40\pi t)\]
+
+        But, in the real world, almost any signal is a weighted sum of sines. For example, take three different sine waves, as follows:
+        <ul>
+            <li>Frequency 10Hz and amplitude 1 \(\Longrightarrow a(t) = \sin(20\pi t)\)</li>
+            <li>Frequency 30Hz and amplitude 2 \(\Longrightarrow b(t) = 2\cdot\sin(60\pi t)\)</li>
+            <li>Frequency 60Hz and amplitude 3 \(\Longrightarrow c(t) = 3\cdot\sin(120\pi t)\)</li>
+        </ul>
+
+        <figure style="float:right">
+            <img src="img/fig1.2.svg" loading="lazy" width="47px" height="45px" style="width:100%;" alt="three sine waves">
+            <figcaption>Figure 1.2: Three different sine waves</figcaption>
+        </figure>
+        <figure style="float:right">
+            <img src="img/fig1.3.svg" loading="lazy" width="47px" height="45px" style="width:100%;" alt="sum sine wave">
+            <figcaption>Figure 1.3: Sum of the three sine waves</figcaption>
+        </figure>      
+
+        These three functions can be plotted separately as shown in the figure 1.2, or they can be summed up in just a single function to represent a more realistic sound (figure 1.3).
+
+    </div>
+
+    <div id="navigation-bar">
+        <a href="#" onclick="pm.prevPage();" id="navigate-left">&lt;&lt; Previous</a>
+        <a href="#" onclick="pm.nextPage();" id="navigate-right">Next &gt;&gt;</a>
+    </div>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</body>
+</html>
