@@ -119,6 +119,126 @@
             <img src="img/fig1.7.svg" loading="lazy" width="94px" height="48px" style="width:70%;" alt="16 bit quantization">
             <figcaption>Figure 1.7: 16-bit quantization example</figcaption>
         </figure>
+
+        <h3>1.4. Computing the spectrum</h3>
+        The previous sections should have given enough information to proceed to the real problem: how to break down a complex audio signal into pure sine waves with their own parameters.
+
+        <h4>1.4.1. Discrete Fourier Transform</h4>
+        The DFT (Discrete Fourier Transform) applies to discrete signals and gives a discrete spectrum.
+        \[X(n)=\sum_{t=0}^{N-1} x(t)e^{-i\frac{2\pi t n}{N}} \tag{1}\]
+        Where:
+        <ul>
+            <li>\(N\) is the size of the <b>window</b>: the number of samples that composed the signal</li>
+            <li>\(X(n)\) is the <b>n<sup>th</sup> bin of frequencies</b></li>
+            <li>\(x(t)\) is the <b>t<sup>th</sup> sample of the audio signal</b></li>
+        </ul>
+
+        The interpretation is that the vector \(x\) represents the signal level at various points in time, the vector \(X\) represents the signal level at various frequencies. What the formula \((1)\) states is that the signal level at frequency \(n\) is equal to the sum of the signal level at each time \(t\) multiplied by a complex exponential (figure 1.8).
+        <br>
+        <figure>
+            <img src="img/fig1.8.svg" loading="lazy" width="115px" height="40px" style="width:70%;" alt="FT representation">
+            <figcaption>Figure 1.8: Visual representation of FT</figcaption>
+        </figure>
+        For example, take an audio signal with 512-sample window, this formula must be applied 512 times:
+        <ul>
+            <li>Once for \(n = 0\) to compute the 0<sup>th</sup> bin of frequencies</li>
+            <li>Once for \(n = 1\) to compute the 1<sup>st</sup> bin of frequencies</li>
+            <li>...</li>
+            <li>Once for \(n = 511\) to compute the 511<sup>th</sup> bin of frequencies</li>
+        </ul>
+        A bin of frequencies is a group of frequencies among two boundaries.<br>
+        The reason why the DFT can compute bins of frequencies and not exact frequencies is quite simple: the DFT gives a <b>discrete spectrum</b>. A bin of frequencies is the smallest unit of frequencies the DFT can compute and the size of the bin is called <b>spectral resolution</b> or <b>frequency resolution</b> which is given by the formula:
+        \[B_S=\frac{F_S}{N}\]
+
+        Where:
+        <ul>
+            <li>\(B_S\) is the <b>bin size</b></li>
+            <li>\(F_S\) is the <b>sampling rate</b></li>
+            <li>\(N\) is <b>the size of the window</b></li>
+        </ul>
+
+        For instance, taking a sampling rate of 8000 Hz and a window size of 512, the bin size will be of <b>15.6 Hz</b>, so:
+        <ul>
+            <li>The 0<sup>th</sup> bin contains the frequencies between 0 Hz and 15.6 Hz</li>
+            <li>The 1<sup>st</sup> bin contains the frequencies between 15.6 Hz and 31.2 Hz</li>
+            <li>And so on</li>
+        </ul>
+        
+        A particularity for a real-valued signal (such as an audio recording) is that <b>only half of the bins computed by the DFT are needed</b> since the output of the DFT is symmetric. In this case, <i>fewer calculations</i> can be made by exploiting this property, which goes under the name of <b>conjugate complex symmetry</b>.
+
+        <blockquote>
+            <div class="title">Conjugate complex symmetry of the DFT</div>
+            If a function \(x(t)\) is real valued then:
+            \[X(N-n)=X^*(n) \tag{2}\]
+            where:
+            <ul>
+                <li>\(X(\odot)\) is the output of the DFT applied to \(x(t)\)</li>
+                <li>\((\odot)*\) denotes the conjugate</li>
+            </ul>
+            <div class="title">Proof</div>
+            Insert \((1)\) in the property \((2)\):
+            $$\begin{aligned}
+                X(n) &= \sum_{t=0}^{N-1} x(t)e^{-i\frac{2\pi t n}{N}} \\
+                X(N-n) &= \sum_{t=0}^{N-1} x(t)e^{-i\frac{2\pi t (N-n)}{N}} \\
+                    &= \sum_{t=0}^{N-1} x(t)e^{-i 2\pi t}e^{i\frac{2\pi t n}{N}} \\
+                    &= \sum_{t=0}^{N-1} x(t)e^{i\frac{2\pi t n}{N}} \\
+                    &= \left(\sum_{t=0}^{N-1} x(t)e^{-i\frac{2\pi t n}{N}}\right) \\
+                    &= X^*(n)
+            \end{aligned}$$
+        </blockquote>
+
+        Hence, if the window size is equal to 512:
+        <img src="img/sketch_dft.svg" loading="lazy" width="109px" height="12px" style="width:70%;" alt="sketch DFT">
+
+        So, the DFT algorithm needs to be repeated only half times the window size (256 times in this example).<br>
+        To be accurate, most real-DFT implementations outputs an \(N/2 + 1\) length array, where \(N\) is the window size. Taking, as always, a sampling rate of 8000 Hz and a window size of 512 (with the bin size being 15.6 Hz):
+        <ul>
+            <li>The 0<sup>th</sup> bin contains the so-called DC component or offset, being the sum of each sample in the window (see below)</li>
+            <li>The 1<sup>st</sup> bin contains the frequencies between 0 Hz and 15.6 Hz</li>
+            <li>The 2<sup>nd</sup> bin contains the frequencies between 15.6 Hz and 31.2 Hz</li>
+            <li>And so on</li>
+        </ul>
+        <blockquote>
+            <div class="title">Proof: DC component</div>
+            Calculate the DFT \((1)\) with \(n=0\):
+            $$\begin{aligned}
+            X(n) |_{n=0} &= \sum_{t=0}^{N-1} x(t)e^{-i\frac{2\pi t n}{N}}|_{n=0} \\
+                &= \sum_{t=0}^{N-1} x(t)
+            \end{aligned}$$
+        </blockquote>
+        The DC component is simply ignored by the algorithm implementation and, in most cases, equals to 0.
+
+        <h4>1.4.2. Window function</h4>
+        Now the problem is partially solved: the DFT can be used to obtain the frequencies amplitude for (just to say) the first \(\frac{1}{10}\) second part of the song, for the second, the third and so on.<br>
+        The problem is that in this way a rectangular function is implicitly applied: a function that equals 1 for the song portion under analysis and 0 elsewhere (figure 1.9).
+        <figure style="float:right">
+            <img src="img/fig1.9.svg" loading="lazy" width="49px" height="45px" style="width:100%;" alt="rectangular window">
+            <figcaption>Figure 1.9: Rectangular window function example</figcaption>
+        </figure>
+
+        <br><br>
+        By windowing the audio signal, the audio signal is multiplied by a window function which depends on the piece of the audio signal under analysis. The usage of a window function produces <b>spectral leakage</b>. Spectral leakage is the appearance of new frequencies that does not exist inside the audio signal. The power of the real frequencies is leaked to others frequencies.
+        <br><br>
+        Spectral leakage cannot be avoided but it can be controlled and reduced by choosing the right window function: there are many different window functions besides the rectangular one. Just to name a few: <i>triangular</i>, <i>Blackman</i>, <i>Hamming</i>, <i>Hann</i> and many others.<br>
+        When analyzing unknown very noisy data best choice is the Hann window function, defined by the following formula:
+        \[w(n)=\frac{1}{2}\left(1-\cos\left(\frac{2\pi n}{N-1}\right)\right)\]
+
+        Where:
+        <ul>
+            <li>\(N\) is the size of the window</li>
+            <li>\(w(n)\) is the value of the window function at \(n\)</li>
+        </ul>
+
+        The aim of this window function is to decrease the amplitude of the discontinuities at the boundaries of a given piece of an audio signal (see figure 1.10).
+
+        <figure>
+            <img src="img/fig1.10.svg" loading="lazy" width="108px" height="80px" style="width:70%;" alt="signal and window shape">
+            <figcaption>Figure 1.10: Shaping the signal with a window function</figcaption>
+        </figure>
+
+        <h4>1.4.3. Downsampling and window size</h4>
+        <b>Downsampling</b> is the process of reducing the sampling rate of a signal. Also, the window size can be reduced accordingly, taking the highest possible acceptable value (the value which gives an acceptable frequency resolution). For instance, resample a song from 44.1 kHz to 8 kHz and use a window size of just 512: in this way, there are fewer samples to analyze and the DFT is applied less frequently.<br>
+        The only difference is that the resampled song will only have frequencies from 0 to 4 kHz (see the Nyquist-Shannon theorem), but the most important part of the song is still present in this range of frequencies.
     </div>
 
     <div id="navigation-bar">
