@@ -134,3 +134,19 @@ blockquote {
     clear: both;
     display: table;
 }
+
+figure {
+    display: inline-block;
+}
+ 
+figure img {
+    display: block;
+    padding: 0;
+}
+  
+figure figcaption {
+    text-align: center;
+    margin-top: 8px;
+    font-size: small;
+}
+  
