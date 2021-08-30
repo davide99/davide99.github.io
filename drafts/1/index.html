@@ -10,7 +10,7 @@
     <script src="../../js/position_hack.js"></script>
     <script src="../../js/page_manager.js"></script>
     <script>
-        const pm = new PageManager(7);
+        const pm = new PageManager(8);
     </script>
 </head>
 
@@ -59,10 +59,10 @@
                 This is just utterly wrong: they are violating the sensor specs and that's bad.
             </li>
             <li>
-                &#x274C; Generate a <b>PWM signal at \(1.4V\)</b> with Arduino.
+                &#x274C; Generate a <b>PWM signal at \(1.4V\)</b> with an MCU.
                 This is not wrong per se, but you need to be very careful if you choose this option because:
                 <ul>
-                    <li>The heater consumes \(70mA\) at \(5V\) and Arduino can't stand this much current</li>
+                    <li>The heater consumes \(70mA\) at \(5V\) and some MCUs (like Arduino) can't stand this much current</li>
                     <li>The heater needs a steady voltage, so the the PWM signal needs to be filtered</li>
                 </ul>
             </li>
@@ -71,7 +71,7 @@
 
         <h3>1.1. The real solution</h3>
         <img src="img/divider.svg" loading="lazy" width=161 height=91 style="float:right;width:55%;" alt="driver circuit">
-        We can grab the \(5V\) from the same power supply used for the Arduino, but what about the \(1.4V\) voltage? We can use a voltage divider:
+        We can grab the \(5V\) from the same power supply used for the MCU, but what about the \(1.4V\) voltage? We can use a voltage divider:
         \[5V\frac{R_2}{R_1+R_2}=V_H=1.4V \Longrightarrow \frac{R_1}{R_2}\approx 2.57\]
         We know, from the <a href="img/MQ-7.pdf">datasheet</a>, that the heater has a resistance of \(33\Omega\). Hence, if we choose \(R_2=33\Omega\):
         \[R_1=2.57\cdot33\Omega\approx 85\Omega\]
@@ -116,7 +116,7 @@
     <div id="page4" class="page">
         <h2>4. \(R_S\) and \(R_0\) definitions</h2>
         <img src="img/series.svg" loading="lazy" width=223 height=768 style="width:10%;float:right" alt="series circuit">
-        As we were discussing at <a href="#" onclick="pm.gotoPage(0);">page 0</a>, we need to measure the sensor resistance \(R_S\). We can't directly measure a resistance with an Arduino, but only voltages. Notice how the sensor \(R_S\) can be wired in series to \(R_L\), hence, if we know \(V_{CC,S}\), \(R_L\) and \(V_{R_L}\), we can find the value of \(R_S\) as follows:
+        As we were discussing at <a href="#" onclick="pm.gotoPage(0);">page 0</a>, we need to measure the sensor resistance \(R_S\). We can't directly measure a resistance with an MCU, but only voltages. Notice how the sensor \(R_S\) can be wired in series to \(R_L\), hence, if we know \(V_{CC,S}\), \(R_L\) and \(V_{R_L}\), we can find the value of \(R_S\) as follows:
         \[
             V_{R_L}=V_{CC,S}\frac{R_L}{R_S+R_L} \Rightarrow R_S=\left(\frac{V_{CC,S}}{V_{R_L}}-1\right)R_L
         \]
@@ -132,11 +132,37 @@
     </div>
 
     <div id="page5" class="page">
+        <h2>5. Calibrating the ADC</h2>
+        Since we need to read \(V_{R_L}\), we are going to use the MCU ADC. The thing is that the ADC has to be calibrated. How? Well, the procedure differs from MCU to MCU, so I'm focusing just on the ESP32 procedure.
+        <br><br>
+        <img src="img/esp32cam_pinout.webp" width=457 height=438 style="width:25%;float:left;padding:1em;" alt="esp32 cam pinout" loading=lazy>
+        The ADC should ideally use an internal reference voltage of \(1100mV\), however it can actually be in the range \(\left(1000mV, 1200mV\right)\): we need to read it. Luckily the ESP32 SDK allows us to route this internal voltage reference to a GPIO, so that we can read it.
+        <br>
+        Hook your multimeter in DC voltage mode to \(\text{GPIO14}\) and to the ground, then upload this sketch:
+<pre><code>#include &lt;driver/adc.h&gt;
+
+void app_main() {
+    esp_err_t status = adc_vref_to_gpio(ADC_UNIT_2, GPIO_NUM_14);
+    if (status == ESP_OK) {
+        printf("v_ref routed to GPIO\n");
+    } else {
+        printf("failed to route v_ref\n");
+    }
+}</code></pre>
+    Check on the serial monitor whether the <i>v_ref routed to GPIO</i> string appear, then read the voltage on the multimeter (mine was \(V_{ref}=1130mV\)).
+
+    <h3>5.1. Checking the calibration</h3>
+    Disclaimer: this is optional (but recommended). We might want to check the ADC accuracy: grab a potentiometer, hook the two fixed pins to \(\text{GND}\) and to \({3.3V}\), hook the wiper pin to \(\text{GPIO14}\). Use your multimeter to measure the voltage between the potentiometer wiper and \(\text{GND}\). Then upload this sketch:
+    
+    </div>
+
+
+    <!--<div id="page5" class="page">
         <h2>5. Find \(R_0\) - Averaging \(A0\)</h2>
         Now that we've defined what \(R_0\) is, we need to find its value.
         <br><br>
         First of all, the datasheet suggests \(R_L=10k\Omega\). Now, take the circuit at <a href="#" onclick="pm.gotoPage(1);">page 1</a> and connect the sensor as seen on <a href="#" onclick="pm.gotoPage(4);">page 4</a>. An overall schema of what we have:
-        <img src="img/schema.svg" loading="lazy" width=250 height=170 style="width:40%" alt="schema">
+        <img src="img/schema.svg" loading="lazy" width=251 height=186 style="width:40%" alt="schema">
         It's the time to write some code which needs to:
         <ol>
             <li>Make \(IN\) low for \(60s\) to heat the heater at \(5V\)</li>
@@ -235,6 +261,21 @@ void loop() {
         In my case, with \(V_{CC,S}=5.1V\), \(V_{CC,A}=5.338V\), \(R_L=9.81k\Omega\), \(\text{meanA0}=523\):
         \[R_0=328\Omega\]
     </div>
+
+    <div id="page8" class="page">
+        <h2>8. Fitting the curve</h2>
+        <img src="img/curves.webp" loading="lazy" width=801 height=703 style="width:50%;float:left;" alt="concentration plot">
+        Let's look again at fig. 3 of the <a href="img/MQ-7.pdf">datasheet</a>. If we know \(R_S\), we can find \(\frac{R_S}{R_0}\), hence the concentration of \(CO\). We need to find a function that matches the behavior of the \(CO\) curve. This is what I did:
+        <ol>
+            <li>Extracted the \(CO\) series using <a href="https://apps.automeris.io/wpd/">WebPlotDigitizer</a> to a CSV</li>
+            <li>Loaded the CSV into Excel</li>
+            <li>Fitted the data with an exponential trending line</li>
+        </ol>
+        The obtained trending line equation is:
+        \[\text{ppm}=44.139e^{0.1139\frac{R_S}{R_0}}\]
+        <br>
+        However, it can't be that simple, right? Indeed
+    </div>-->
 
     <div id="navigation-bar">
         <a href="#" onclick="pm.prevPage();" id="navigate-left">&lt;&lt; Previous</a>
