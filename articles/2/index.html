@@ -31,6 +31,10 @@
             <li><i>Frequency</i> \(\Longrightarrow\) the number of cycles per unit of time, measured in Hertz</li>
             <li><i>Amplitude</i> \(\Longrightarrow\) the height of the cycle</li>
         </ul>
+        <figure style="float:right">
+            <img src="img/fig1.1.svg" loading="lazy" width="50px" height="45px" style="width:100%;" alt="sine wave">
+            <figcaption>Figure 1.1: A 20Hz sine wave</figcaption>
+        </figure>
 
         A generic sine wave is described by the function:
         \[y(t) = A \cdot \sin(2\pi f t + \varphi)\]
@@ -44,13 +48,13 @@
             <li>\(\varphi\) is the phase</li>
         </ul>
 
-        <figure style="float:right">
-            <img src="img/fig1.1.svg" loading="lazy" width="47px" height="45px" style="width:100%;" alt="sine wave">
-            <figcaption>Figure 1.1: A 20Hz sine wave</figcaption>
-        </figure>
-
         In the figure 1.1 the sine wave is described by the function:
         \[y(t)=1\cdot\sin(2\pi 20 t + 0)=\sin(40\pi t)\]
+
+        <figure style="float:left">
+            <img src="img/fig1.2.svg" loading="lazy" width="50px" height="45px" style="width:100%;" alt="three sine waves">
+            <figcaption>Figure 1.2: Three different sine waves</figcaption>
+        </figure>
 
         But, in the real world, almost any signal is a weighted sum of sines. For example, take three different sine waves, as follows:
         <ul>
@@ -58,18 +62,63 @@
             <li>Frequency 30Hz and amplitude 2 \(\Longrightarrow b(t) = 2\cdot\sin(60\pi t)\)</li>
             <li>Frequency 60Hz and amplitude 3 \(\Longrightarrow c(t) = 3\cdot\sin(120\pi t)\)</li>
         </ul>
-
         <figure style="float:right">
-            <img src="img/fig1.2.svg" loading="lazy" width="47px" height="45px" style="width:100%;" alt="three sine waves">
-            <figcaption>Figure 1.2: Three different sine waves</figcaption>
-        </figure>
-        <figure style="float:right">
-            <img src="img/fig1.3.svg" loading="lazy" width="47px" height="45px" style="width:100%;" alt="sum sine wave">
+            <img src="img/fig1.3.svg" loading="lazy" width="50px" height="45px" style="width:100%;" alt="sum sine wave">
             <figcaption>Figure 1.3: Sum of the three sine waves</figcaption>
-        </figure>      
+        </figure>
 
-        These three functions can be plotted separately as shown in the figure 1.2, or they can be summed up in just a single function to represent a more realistic sound (figure 1.3).
+        These three functions can be plotted separately as shown in the figure 1.2, or they can be summed up in just a single function to represent a more realistic sound (figure 1.3). 
 
+        <h3>1.2. Spectrogram</h3>
+        A <b>spectrogram</b> (figure 1.4) is a visual representation of how the frequencies of a signal vary with time. Usually, a spectrogram is made up of three axis (making a 3D graph):
+        <ul>
+            <li>Time on the horizontal axis (x)</li>
+            <li>Frequencies on the vertical axis (y)</li>
+            <li>Amplitude of a given frequency at a given time (described by a color)</li>
+        </ul>
+        <figure>
+            <img src="img/fig1.4.svg" loading="lazy" width="1368px" height="864px" style="width:80%;" alt="spectrogram">
+            <figcaption>Figure 1.4: Spectrogram of a real song</figcaption>
+        </figure>
+
+        <h3>1.3. Digitalization</h3>
+        Nowadays the most common way to listen to music is using a digital file (such as an MP3 file or a FLAC file and
+        so on). However, a sound is an analog phenomenon that needs to be converted into a digital representation, in order to be easily recorded and stored.
+
+        <h4>1.3.1. Sampling</h4>
+        Analog signals are continuous signals, which means that given two boundaries in the signals there is always a point between them. But in the digital world is not so affordable to store an infinite amount of data, so the analog signal needs to be reduced to a <b>discrete-time signal</b>. This process is called <b>sampling</b>. It is quite simple: an instantaneous value of the continuous signal is taken every <b>T</b> seconds. T is called <b>sampling period</b> and it should be short enough so that the digital song sounds like the analog one.<br>
+        The <b>sampling rate</b> or <b>sampling frequency</b> \(f_s\) is the number of samples obtained in one second, given by the formula:
+        \[f_s=\frac{1}{T}\]
+
+        The standard sampling rate for digital music is usually 44100 Hz. The reason behind that number lies in the Nyquist-Shannon theorem which can be expressed as:
+        <blockquote>
+            <div class="title">Nyquist-Shannon theorem</div>
+            Suppose the highest frequency component for a given analog signal is \(f_{max}\), the sampling rate must be at least \(2 f_{max}\).
+        </blockquote>
+
+        There is some theory involved in the theorem, but it states that given an analog signal, it needs at least 2 points per cycle to be correctly identified. So, since the human ears can listen to signals whose frequency is between 20 Hz and 20 kHz, taking the highest boundary and multiplying it by 2, it will give 40 kHz, which is close enough to the standardized 44.1 kHz (figure 1.5).
+
+        <figure>
+            <img src="img/fig1.5.svg" loading="lazy" width="109px" height="68px" style="width:70%;" alt="sampling example">
+            <figcaption>Figure 1.5: Sampling example of a 30 Hz signal</figcaption>
+        </figure>
+
+        <h4>1.3.2. Quantization</h4>
+        With the sampling process, the signal is not fully digital: the time resolution became discrete but what about signal amplitude? The amplitude of a signal represents its loudness, and in an analog world it is continuous, so there must be a way to make it discrete. This process is called <b>quantization</b>. The quantization resolution is measured in bits, also known as <b>bit depth</b> of a song.
+        <br>
+        Taking a depth of 3 bits means that the loudness of the song can vary between 0 and 23 −1 , so there are just 8 quantization levels to represent the loudness of the whole song (figure 1.6).
+
+        <figure>
+            <img src="img/fig1.6.svg" loading="lazy" width="94px" height="48px" style="width:70%;" alt="3 bit quantization">
+            <figcaption>Figure 1.6: 3-bit quantization example</figcaption>
+        </figure>
+
+        The higher the bit depth, the better the amplitude is approximated. The standard quantization is coded on <b>16 bits</b>. For instance, in the same previous analog signal with a 16-bit quantization, the amplitude can assume \(2^{16}\) values, which will give a much more precise accuracy (figure 1.7).
+
+        <figure>
+            <img src="img/fig1.7.svg" loading="lazy" width="94px" height="48px" style="width:70%;" alt="16 bit quantization">
+            <figcaption>Figure 1.7: 16-bit quantization example</figcaption>
+        </figure>
     </div>
 
     <div id="navigation-bar">

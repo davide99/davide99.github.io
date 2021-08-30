@@ -100,7 +100,13 @@ blockquote {
     padding: 1em;
     border-left: 3px solid #ccc;
     font-style: italic;
-} 
+}
+
+blockquote > .title {
+    font-weight: bold;
+    padding-bottom: 1em;
+    color: #004d80;
+}
 
 #navigation-bar {
     margin-top: 2em;
@@ -136,7 +142,7 @@ blockquote {
 }
 
 figure {
-    display: inline-block;
+    display: block;
 }
  
 figure img {
