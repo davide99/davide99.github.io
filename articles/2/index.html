@@ -241,6 +241,158 @@
         The only difference is that the resampled song will only have frequencies from 0 to 4 kHz (see the Nyquist-Shannon theorem), but the most important part of the song is still present in this range of frequencies.
     </div>
 
+    <div id="page1" class="page">
+        <h2>2. The actual algorithm</h2>
+
+        Now it is the time to put everything together and start coding the algorithm. The aim of the software is to record a small portion of a song and find its title.<br>
+        The following sections will cover a global overview of the algorithm, then the actual process involved in the song scoring.<br>
+        Take into account that, at this abstraction level, some obvious parts (such as the track file reading routines) will not be described, since they are standard pieces of code.
+
+        <h3>2.1. Global overview</h3>
+        An <b>audio fingerprint</b> is a digital summary that can be used to identify an audio sample. In the figure 2.1 a simplified architecture of the scoring algorithm is represented.<br><br>
+
+        <figure>
+            <img src="img/fig2.1.svg" loading="lazy" width="91px" height="48px" style="width:60%;" alt="general overview scheme">
+            <figcaption>Figure 2.1: General overview scheme</figcaption>
+        </figure>
+
+        On the <b>server side</b>:
+        <ul>
+            <li>The algorithm computes the fingerprints of the input tracks</li>
+            <li>The computed fingerprints are stored in the database</li>
+        </ul>
+
+        On the <b>client side</b>:
+        <ul>
+            <li>The current playing music is recorded for a couple of seconds</li>
+            <li>The algorithm computes the fingerprints of the recording</li>
+            <li>The fingerprints are sent to the server</li>
+            <li>The server analyzes the fingerprints and possibly outputs a song title</li>
+        </ul>
+
+        In the following sections the algorithm is being described.
+
+        <h3>2.2. Spectrogram creation</h3>
+        The first step to analyze the audio is to create the spectrogram. The process is described in the following lines:
+        <ul>
+            <li>A 512-sized Hann window function is computed</li>
+            <li>The audio signal is divided in 512-sized windows with a 50% overlap (figure 2.2)</li>
+            <li>Each audio window is multiplied by the Hann precomputed window</li>
+            <li>The DFT is computed for each audio window and added into a vector which represents the spectrogram</li>
+        </ul>
+
+        <figure>
+            <img src="img/fig2.2.svg" loading="lazy" width="110px" height="68px" style="width:70%;" alt="audio windowing with overlap">
+            <figcaption>Figure 2.2: Audio windowing with overlap</figcaption>
+        </figure>
+
+        <h3>2.3. Peaks finder and fingerprinting</h3>
+        The spectrogram is then processed in order to obtain its most significant information. It is divided into a sort of a grid where each cell of the grid has the following size:
+        <ul>
+            <li>Width equals to C</li>
+            <li>Height equals to a range of frequencies (called <b>band</b>)</li>
+        </ul>
+        Take the simplified figure 2.3 where:
+        <ul>
+            <li>\(C = 4\)</li>
+            <li>The band size is always 100 Hz</li>
+        </ul>
+
+        <figure>
+            <img src="img/fig2.3.svg" loading="lazy" width="119px" height="69px" style="width:70%;" alt="spectrogram division">
+            <figcaption>Figure 2.3: Spectrogram division (each color is a band)</figcaption>
+        </figure>
+
+        In the actual algorithm \(C = 32\) and the bands lengths follow a logarithmic scale (see <a href="#DividingSpectrogramInBands">Dividing the spectrogram in bands</a>).
+        <br>
+        For each cell the algorithm finds and stores the 3 most powerful frequencies in a vector (figure 2.4).
+
+        <figure>
+            <img src="img/fig2.4.svg" loading="lazy" width="110px" height="68px" style="width:70%;" alt="three points per cell spectrogram">
+            <figcaption>Figure 2.4: Three points per cell spectrogram</figcaption>
+        </figure>
+
+        <h4 id="DividingSpectrogramInBands">2.3.1. Dividing the spectrogram in bands</h4>
+        There exist at least a few ways to divide the spectrogram in meaningful frequency ranges, but the most interesting one is the mel scale. It was experimentally discovered that the higher the frequency the hardest for a human hear to notice the difference between relatively close but different frequencies.<br>
+        In other words, humans perceive frequencies on a <i>logarithmic scale</i>, so that the difference between 500 and 1000 Hz is noticeable, but this is not true for the difference between 10000 and 10000 Hz.<br>
+        The formula to convert between the Hertz (linear) scale and the <b>mel</b> (logarithmic) scale is defined as:
+
+        \[f(m)=700\left(10^{\frac{m}{2595}}-1\right) \tag{3}\]
+
+        where:
+        <ul>
+            <li><b>\(m\)</b> is the mel frequency</li>
+            <li><b>\(f\)</b> is the Hertz frequency</li>
+        </ul>
+        The plotted formula is represented in figure 2.5.
+
+        <figure style="float:right">
+            <img src="img/fig2.5.svg" loading="lazy" width="49px" height="44px" style="width:100%;" alt="mel scale to hertz mapping">
+            <figcaption>Figure 2.5: Mel scale to Hertz mapping</figcaption>
+        </figure>
+
+        The algorithm follows this approach:
+        <ol>
+            <li>A starting mel value \(\alpha\) is chosen</li>
+            <li>A mel band size \(\delta\) is chosen</li>
+            <li>
+                Compute the mel bands boundaries as:
+                \[\left\{0, \alpha, \alpha + \delta, \alpha + 2\delta, ..., \alpha + k\delta \right\}\
+            </li>
+            <li>
+                Convert the mel band boundaries back to Hertz with formula \(3\):
+                \[\left\{0, f(\alpha), f(\alpha+\delta), f(\alpha+2\delta), ..., f(\alpha+k\delta)\right\}\]
+            </li>
+        </ol>
+        
+        Each band will contain roughly the same &quot;amount of information&quot; from a listener point of view.
+
+        <h3>2.4. Links structure</h3>
+        Now, having a way to compute a frequency summary of an audio signal, the recognition process should be straight enough: each point of the recording should be compared with the points of the full song. Though it works well, this simple approach requires a lot of computation time.<br>
+        Instead of comparing each point one by one, the idea is to look for multiple points at the same time. This group of points is called links, and it represents a relationship between a point and some others. In order to be sure that both the recording and the full song will generate the same links, a rule must be defined: spectrogram points must be sorted in ascending order according to the window they belong to.
+        <br><br>
+        So, given a point \(\alpha\) (called address) and an initially empty set of points A, the algorithm will put in A all the other points \(\beta\) whose absolute window difference compared to the point \(\alpha \) is between 1 and 3 and are in the same band as \(\alpha\). In symbols:
+        \[ \beta\in A\Leftrightarrow(1\leq\beta\textrm{.window}-\alpha\textrm{.window}&lt;3)\wedge(\beta\textrm{.band}=\alpha\textrm{.band}) \]
+        For each point b belonging to A a link is computed and added to a list (figure 2.6). The link structure is the following (figure 2.7):
+
+        \[
+            \textrm{link}
+            \left\{\begin{matrix}
+            \textrm{.hash} = h\left ( \delta_w, \delta_f, \alpha\textrm{.frequency} \right ) \\
+            \textrm{.window} = \alpha\textrm{.window}
+            \end{matrix}\right.
+        \]
+
+        Where:
+        <ul>
+            <li>\(\delta_w = \beta\textrm{.window} - \alpha\textrm{.window}\)</li>
+            <li>\(\delta_f = \beta\textrm{.frequency} - \alpha\textrm{.frequency}\)</li>
+            <li>\(h\) is a generic hash function</li>
+        </ul>
+
+        The produced links are quite reproducible, even in the presence of noise and codec compression. Another advantage is that in this way all the times are relative.<br>
+        On the server side each link is stored in a database along with the song information.
+
+        <figure>
+            <img src="img/fig2.6.svg" loading="lazy" width="108px" height="69px" style="width:70%;" alt="links creation">
+            <figcaption>Figure 2.6: Links creation</figcaption>
+        </figure>
+        <figure>
+            <img src="img/fig2.7.svg" loading="lazy" width="108px" height="68px" style="width:70%;" alt="link structure">
+            <figcaption>Figure 2.7: Link structure</figcaption>
+        </figure>
+
+        <h3>2.5. Scoring</h3>
+        It is assumed that the full song links are in the database. Now a client, after recording a small piece of song, computes on its own the links of the recording and sends them to the server. The server has to:
+        <ol>
+            <li>Put the recording links in a temporary in-memory table</li>
+            <li>Relate the full songs links table with the recording table if they share the same hash</li>
+            <li>Count the tuples grouped by the time difference between the recording links and the full song links (links of the same song share the same time difference) and the song id</li>
+            <li>Descending sort the tuples according to the count field</li>
+            <li>The topmost tuple obtained contains the id of the most likely matching</li>
+        </ol>
+    </div>
+
     <div id="navigation-bar">
         <a href="#" onclick="pm.prevPage();" id="navigate-left">&lt;&lt; Previous</a>
         <a href="#" onclick="pm.nextPage();" id="navigate-right">Next &gt;&gt;</a>
