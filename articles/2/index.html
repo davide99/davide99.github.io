@@ -33,7 +33,7 @@
     <div id="page0" class="page">
         <h2>1. Music and physics</h2>
 
-        A sound is a vibration that propagates through the air and can be understood by ears. MP3 players or computers use headphones or built-in speakers to produce vibrations and make &quot;sounds&quot;. Music is just a kind of signal which can be represented using various sinusoidal waveforms and it must be treated like that.
+        A sound is a vibration that propagates through the air and can be understood by human ears. MP3 players or computers use headphones or built-in speakers to produce vibrations and make &quot;sounds&quot;. Music is just a kind of signal which can be represented using various sinusoidal waveforms and it must be treated like that.
 
         <h3>1.1. Signal scrambling via sines sums</h3>
         A sine wave is characterized by two parameters:
@@ -81,7 +81,7 @@
         These three functions can be plotted separately as shown in the figure 1.2, or they can be summed up in just a single function to represent a more realistic sound (figure 1.3). 
 
         <h3>1.2. Spectrogram</h3>
-        A <b>spectrogram</b> (figure 1.4) is a visual representation of how the intensities of the frequencies in a signal vary with time. Usually, a spectrogram is made up of three axis (making a 3D graph):
+        A <b>spectrogram</b> (figure 1.4) is a visual representation of how the intensities of the frequencies in a signal vary with time. Usually, a spectrogram is made up of three axes (making a 3D graph):
         <ul>
             <li>Time on the horizontal axis (\(x\))</li>
             <li>Frequencies on the vertical axis (\(y\))</li>
@@ -93,17 +93,17 @@
         </figure>
 
         <h3>1.3. Digitalization</h3>
-        Nowadays the most common way to listen to music is using a digital file (such as an MP3 file or a FLAC one). However, a sound is an analog phenomenon that needs to be converted into a digital representation, in order to be easily recorded and stored.
+        Nowadays the most common way to listen to music is using a digital file (such as an MP3 file or a FLAC one). However, a sound is an analog phenomenon that needs to be converted into a digital representation to be easily recorded and stored.
 
         <h4>1.3.1. Sampling</h4>
-        Analog signals are continuous signals, which means that given two times \(t_1\) and \(t_2\) within the signal, if we choose \(t_3\) such that \(t_1&lt;t_3&lt;t_2\) the signal exists for each \(t_3\). But in the digital world it's not so affordable to store an infinite amount of data, so the analog signal needs to be reduced to a <b>discrete-time signal</b>. This process is called <b>sampling</b>. It is quite simple: an instantaneous value of the continuous signal is taken every <b>T</b> seconds. T is called <b>sampling period</b> and it should be short enough so that the digital song sounds like the analog one.<br>
+        Analog signals are continuous signals, which means that given two times \(t_1\) and \(t_2\) within the signal if we choose \(t_3\) such that \(t_1&lt;t_3&lt;t_2\), the signal exists for each \(t_3\). But in the digital world it's not so affordable to store an infinite amount of data, so the analog signal needs to be reduced to a <b>discrete-time signal</b>. This process is called <b>sampling</b>. It is quite simple: an instantaneous value of the continuous signal is taken every <b>T</b> seconds. T is called <b>sampling period</b> and it should be short enough so that the digital song sounds like the analog one.<br>
         The <b>sampling rate</b> or <b>sampling frequency</b> \(f_s\) is the number of samples obtained in one second, given by the formula:
         \[f_s=\frac{1}{T}\]
 
         The standard sampling rate for digital music is usually 44100 Hz. The reason behind that number lies in the Nyquist-Shannon theorem which can be expressed as:
         <blockquote>
             <div class="title" id="nyquist">Nyquist-Shannon theorem</div>
-            Suppose the highest frequency component for a given analog signal is \(f_{max}\) then the sampling rate \(f_s\) needs to be choose such that: \(f_s &ge; 2 f_{max}\).
+            Suppose the highest frequency component for a given analog signal is \(f_{max}\) then the sampling rate \(f_s\) needs to be chosen such that: \(f_s &ge; 2 f_{max}\).
         </blockquote>
 
         There is some theory involved in the theorem, but it states that given an analog signal, it needs at least 2 points per cycle to be correctly identified. So, since the human ears can listen to signals whose frequency is between 20 Hz and 20 kHz, taking the highest boundary and multiplying it by 2, it will give 40 kHz, which is close enough to the standardized 44.1 kHz (figure 1.5).
@@ -123,7 +123,7 @@
             <figcaption>Figure 1.6: 3-bit quantization example</figcaption>
         </figure>
 
-        The higher the bit depth, the better the amplitude is approximated. The standard quantization resolution is <b>16 bits</b>. For instance, in the same previous analog signal with a 16-bit quantization, the amplitude can assume \(2^{16}\) values, which will result in a much higher accuracy (figure 1.7).
+        The higher the bit depth, the better the amplitude is approximated. The standard quantization resolution is <b>16 bits</b>. For instance, in the same previous analog signal with a 16-bit quantization, the amplitude can assume \(2^{16}\) values, which will result in much higher accuracy (figure 1.7).
 
         <figure>
             <img src="img/fig1.7.svg" loading="lazy" width="94px" height="48px" style="width:70%;" alt="16 bit quantization">
@@ -178,7 +178,7 @@
 
         <blockquote>
             <div class="title">Conjugate complex symmetry of the DFT</div>
-            If a function \(x(t)\) is real valued then:
+            If a function \(x(t)\) is real-valued then:
             \[X(N-n)=X^*(n) \tag{2}\]
             where:
             <ul>
@@ -216,10 +216,10 @@
                 &= \sum_{t=0}^{N-1} x(t)
             \end{aligned}$$
         </blockquote>
-        The DC component is simply ignored by the algorithm implementation and, in most cases, equals to 0.
+        The DC component is simply ignored by the algorithm implementation and, in most cases, equals 0.
 
         <h4>1.4.2. Window function</h4>
-        Now the problem is partially solved: the DFT can be used to obtain the frequencies amplitude for (just to say) the first \(\frac{1}{10}\) second part of the song, for the second, the third and so on: this process is called <b>signal windowing</b>, where only a part of a signal is analyzed at a time, instead of doing it all in one take.<br>
+        Now the problem is partially solved: the DFT can be used to obtain the frequencies amplitude for (just to say) the first \(\frac{1}{10}\) second part of the song, for the second, the third, and so on: this process is called <b>signal windowing</b>, where only a part of a signal is analyzed at a time, instead of doing it all in one take.<br>
         The problem is that in this way a <i>rectangular function</i> is implicitly applied: a function that equals 1 for the song portion under analysis and 0 elsewhere (figure 1.9).
         <figure style="float:right">
             <img src="img/fig1.9.svg" loading="lazy" width="49px" height="45px" style="width:100%;" alt="rectangular window">
@@ -254,25 +254,25 @@
     <div id="page1" class="page">
         <h2>2. The actual algorithm</h2>
 
-        Now it is the time to put everything together and start coding the algorithm. The aim of the software is to record a small portion of a song and find its title.<br>
+        Now is the time to put everything together and start coding the algorithm. The aim of the software is to record a small portion of a song and find its title.<br>
         The following sections will cover a global overview of the algorithm, then the actual process involved in the song scoring.<br>
         Take into account that, at this abstraction level, some obvious parts (such as the track file reading routines) will not be described, since they are standard pieces of code.
 
         <h3>2.1. Global overview</h3>
-        An <b>audio fingerprint</b> is a digital summary that can be used to identify an audio sample. In the figure 2.1 a simplified architecture of the scoring algorithm is represented.<br><br>
+        An <b>audio fingerprint</b> is a digital summary that can be used to identify an audio sample. In figure 2.1 a simplified architecture of the scoring algorithm is represented.<br><br>
 
         <figure>
             <img src="img/fig2.1.svg" loading="lazy" width="91px" height="48px" style="width:60%;" alt="general overview scheme">
             <figcaption>Figure 2.1: General overview scheme</figcaption>
         </figure>
 
-        On the <b>server side</b>:
+        On the <b>server-side</b>:
         <ul>
             <li>The algorithm computes the fingerprints of the input tracks</li>
             <li>The computed fingerprints are stored in the database</li>
         </ul>
 
-        On the <b>client side</b>:
+        On the <b>client-side</b>:
         <ul>
             <li>The current playing music is recorded for a couple of seconds</li>
             <li>The algorithm computes the fingerprints of the recording</li>
@@ -280,13 +280,13 @@
             <li>The server analyzes the fingerprints and possibly outputs a song title</li>
         </ul>
 
-        In the following sections the algorithm is being described.
+        In the following sections, the algorithm is being described.
 
         <h3>2.2. Spectrogram creation</h3>
         The first step to analyze the audio is to create the spectrogram. The process is described in the following lines:
         <ul>
             <li>A 512-sized Hann window function is computed</li>
-            <li>The audio signal is divided in 512-sized windows with a 50% overlap (figure 2.2)</li>
+            <li>The audio signal is divided into 512-sized windows with a 50% overlap (figure 2.2)</li>
             <li>Each audio window is multiplied by the Hann precomputed window</li>
             <li>The DFT is computed for each audio window and added into a vector which represents the spectrogram</li>
         </ul>
@@ -297,10 +297,10 @@
         </figure>
 
         <h3>2.3. Peaks finder and fingerprinting</h3>
-        The spectrogram is then processed in order to obtain its most significant information. It is divided into a sort of a grid where each cell has the following size:
+        The spectrogram is then processed to obtain its most significant information. It is divided into a sort of a grid where each cell has the following size:
         <ul>
-            <li>Width equals to C</li>
-            <li>Height equals to a range of frequencies (called <b>band</b>)</li>
+            <li>Width equals C</li>
+            <li>Height equals a range of frequencies (called a <b>band</b>)</li>
         </ul>
         Take the simplified figure 2.3 where:
         <ul>
@@ -313,18 +313,18 @@
             <figcaption>Figure 2.3: Spectrogram division (each color is a band)</figcaption>
         </figure>
 
-        In the actual algorithm \(C = 32\) and the bands lengths follow a logarithmic scale (see <a href="#DividingSpectrogramInBands">Dividing the spectrogram in bands</a>).
+        In the actual algorithm, \(C = 32\) and the bands' lengths follow a logarithmic scale (see <a href="#DividingSpectrogramInBands">Dividing the spectrogram into bands</a>).
         <br>
-        For each cell the algorithm finds and stores the 3 most powerful frequencies in a vector (figure 2.4).
+        For each cell, the algorithm finds and stores the 3 most powerful frequencies in a vector (figure 2.4).
 
         <figure>
             <img src="img/fig2.4.svg" loading="lazy" width="110px" height="68px" style="width:70%;" alt="three points per cell spectrogram">
             <figcaption>Figure 2.4: Three points per cell spectrogram</figcaption>
         </figure>
 
-        <h4 id="DividingSpectrogramInBands">2.3.1. Dividing the spectrogram in bands</h4>
-        There exist at least a few ways to divide the spectrogram in meaningful frequency ranges, but the most interesting one is the <b>mel scale</b>. It was experimentally discovered that the higher the frequency the hardest for a human hear to notice the difference between relatively close but different frequencies.<br>
-        In other words, humans perceive frequencies on a <i>logarithmic scale</i>, so that the difference between 500 and 1000 Hz is more noticeable then, to say, the difference between 10000 and 10500 Hz.<br>
+        <h4 id="DividingSpectrogramInBands">2.3.1. Dividing the spectrogram into bands</h4>
+        There exist at least a few ways to divide the spectrogram into meaningful frequency ranges, but the most interesting one is the <b>mel scale</b>. It was experimentally discovered that the higher the frequency the hardest it is for a human hear to notice the difference between relatively close but different frequencies.<br>
+        In other words, humans perceive frequencies on a <i>logarithmic scale</i>, so that the difference between 500 and 1000 Hz is more noticeable than, to say, the difference between 10000 and 10500 Hz.<br>
         The formula to convert between the Hertz (linear) scale and the mel (logarithmic) scale is defined as:
 
         \[f(m)=700\left(10^{\frac{m}{2595}}-1\right) \tag{3}\]
@@ -355,11 +355,11 @@
             </li>
         </ol>
         
-        Each band will contain roughly the same &quot;amount of information&quot; from the listener point of view.
+        Each band will contain roughly the same &quot;amount of information&quot; from the listener's point of view.
 
         <h3>2.4. Links structure</h3>
         Now, having a way to compute a frequency summary of an audio signal, the recognition process should be straight enough: each point of the recording should be compared with the points of the full song. Though it works well, this simple approach requires a lot of computation time and power.<br>
-        Instead of comparing each point one by one, the idea is to look for multiple points at the same time. This group of points is called <b>link</b>, and it represents a relationship between a point and some others. In order to be sure that both the recording and the full song will generate the same links, a rule must be defined: spectrogram points must be sorted in ascending order according to the window they belong to.
+        Instead of comparing each point one by one, the idea is to look for multiple points at the same time. This group of points is called a <b>link</b>, and it represents a relationship between a point and some others. To be sure that both the recording and the full song will generate the same links, a rule must be defined: spectrogram points must be sorted in ascending order according to the window they belong to.
         <br><br>
         So, given a point \(\alpha\) (called address) and an initially empty set of points \(A\), the algorithm will put in \(A\) all the other points \(\beta\) whose absolute window difference compared to the point \(\alpha \) is between 1 and 3 and are in the same band as \(\alpha\). In symbols:
         \[ \beta\in A\Leftrightarrow(1\leq\beta\textrm{.window}-\alpha\textrm{.window}&lt;3)\wedge(\beta\textrm{.band}=\alpha\textrm{.band}) \]
@@ -381,7 +381,7 @@
         </ul>
 
         By doing so the links are quite reproducible, even in the presence of noise and codec compression. Another advantage is that in this way all the times are relative.<br>
-        On the server side each link is stored in a database along with the song information.
+        On the server-side each link is stored in a database along with the song information.
 
         <figure>
             <img src="img/fig2.6.svg" loading="lazy" width="108px" height="69px" style="width:70%;" alt="links creation">
