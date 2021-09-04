@@ -33,13 +33,14 @@
     <div id="page0" class="page">
         <h2>1. Music and physics</h2>
 
-        A sound is a vibration that propagates through the air and can be understood by ears. MP3 players or computers use headphones or built-in speakers to produce vibrations and make &quot;sounds&quot;. Music is just a kind of signal which can be reproduced using various sinusoidal waveforms and like that must be treated.
+        A sound is a vibration that propagates through the air and can be understood by ears. MP3 players or computers use headphones or built-in speakers to produce vibrations and make &quot;sounds&quot;. Music is just a kind of signal which can be represented using various sinusoidal waveforms and it must be treated like that.
 
         <h3>1.1. Signal scrambling via sines sums</h3>
         A sine wave is characterized by two parameters:
         <ul>
-            <li><i>Frequency</i> \(\Longrightarrow\) the number of cycles per unit of time, measured in Hertz</li>
             <li><i>Amplitude</i> \(\Longrightarrow\) the height of the cycle</li>
+            <li><i>Frequency</i> \(\Longrightarrow\) the number of cycles per unit of time, measured in Hertz</li>
+            <li><i>Phase</i> \(\Longrightarrow\) how much the first cycle is shifted forward or backward w.r.t. \(t=0\)</li>
         </ul>
         <figure style="float:right">
             <img src="img/fig1.1.svg" loading="lazy" width="50px" height="45px" style="width:100%;" alt="sine wave">
@@ -54,8 +55,8 @@
         <ul>
             <li>\(A\) is the amplitude</li>
             <li>\(f\) is the frequency</li>
-            <li>\(t\) is the time</li>
             <li>\(\varphi\) is the phase</li>
+            <li>\(t\) is the time</li>
         </ul>
 
         In the figure 1.1 the sine wave is described by the function:
@@ -80,11 +81,11 @@
         These three functions can be plotted separately as shown in the figure 1.2, or they can be summed up in just a single function to represent a more realistic sound (figure 1.3). 
 
         <h3>1.2. Spectrogram</h3>
-        A <b>spectrogram</b> (figure 1.4) is a visual representation of how the frequencies of a signal vary with time. Usually, a spectrogram is made up of three axis (making a 3D graph):
+        A <b>spectrogram</b> (figure 1.4) is a visual representation of how the intensities of the frequencies in a signal vary with time. Usually, a spectrogram is made up of three axis (making a 3D graph):
         <ul>
-            <li>Time on the horizontal axis (x)</li>
-            <li>Frequencies on the vertical axis (y)</li>
-            <li>Amplitude of a given frequency at a given time (described by a color)</li>
+            <li>Time on the horizontal axis (\(x\))</li>
+            <li>Frequencies on the vertical axis (\(y\))</li>
+            <li>Intensity of a given frequency at a given time (encoded by colors)</li>
         </ul>
         <figure>
             <img src="img/fig1.4.svg" loading="lazy" width="1368px" height="864px" style="width:80%;" alt="spectrogram">
@@ -92,18 +93,17 @@
         </figure>
 
         <h3>1.3. Digitalization</h3>
-        Nowadays the most common way to listen to music is using a digital file (such as an MP3 file or a FLAC file and
-        so on). However, a sound is an analog phenomenon that needs to be converted into a digital representation, in order to be easily recorded and stored.
+        Nowadays the most common way to listen to music is using a digital file (such as an MP3 file or a FLAC one). However, a sound is an analog phenomenon that needs to be converted into a digital representation, in order to be easily recorded and stored.
 
         <h4>1.3.1. Sampling</h4>
-        Analog signals are continuous signals, which means that given two boundaries in the signals there is always a point between them. But in the digital world is not so affordable to store an infinite amount of data, so the analog signal needs to be reduced to a <b>discrete-time signal</b>. This process is called <b>sampling</b>. It is quite simple: an instantaneous value of the continuous signal is taken every <b>T</b> seconds. T is called <b>sampling period</b> and it should be short enough so that the digital song sounds like the analog one.<br>
+        Analog signals are continuous signals, which means that given two times \(t_1\) and \(t_2\) within the signal, if we choose \(t_3\) such that \(t_1&lt;t_3&lt;t_2\) the signal exists for each \(t_3\). But in the digital world it's not so affordable to store an infinite amount of data, so the analog signal needs to be reduced to a <b>discrete-time signal</b>. This process is called <b>sampling</b>. It is quite simple: an instantaneous value of the continuous signal is taken every <b>T</b> seconds. T is called <b>sampling period</b> and it should be short enough so that the digital song sounds like the analog one.<br>
         The <b>sampling rate</b> or <b>sampling frequency</b> \(f_s\) is the number of samples obtained in one second, given by the formula:
         \[f_s=\frac{1}{T}\]
 
         The standard sampling rate for digital music is usually 44100 Hz. The reason behind that number lies in the Nyquist-Shannon theorem which can be expressed as:
         <blockquote>
-            <div class="title">Nyquist-Shannon theorem</div>
-            Suppose the highest frequency component for a given analog signal is \(f_{max}\), the sampling rate must be at least \(2 f_{max}\).
+            <div class="title" id="nyquist">Nyquist-Shannon theorem</div>
+            Suppose the highest frequency component for a given analog signal is \(f_{max}\) then the sampling rate \(f_s\) needs to be choose such that: \(f_s &ge; 2 f_{max}\).
         </blockquote>
 
         There is some theory involved in the theorem, but it states that given an analog signal, it needs at least 2 points per cycle to be correctly identified. So, since the human ears can listen to signals whose frequency is between 20 Hz and 20 kHz, taking the highest boundary and multiplying it by 2, it will give 40 kHz, which is close enough to the standardized 44.1 kHz (figure 1.5).
@@ -114,16 +114,16 @@
         </figure>
 
         <h4>1.3.2. Quantization</h4>
-        With the sampling process, the signal is not fully digital: the time resolution became discrete but what about signal amplitude? The amplitude of a signal represents its loudness, and in an analog world it is continuous, so there must be a way to make it discrete. This process is called <b>quantization</b>. The quantization resolution is measured in bits, also known as <b>bit depth</b> of a song.
+        With the sampling process, the signal is not fully digital: the time resolution became discrete but what about signal amplitude? The amplitude of a signal represents its loudness, and in an analog world it is continuous, so there must be a way to make it discrete. This process is called <b>quantization</b>. The quantization resolution is measured in bits and is known as <b>bit depth</b>.
         <br>
-        Taking a depth of 3 bits means that the loudness of the song can vary between 0 and 23 −1 , so there are just 8 quantization levels to represent the loudness of the whole song (figure 1.6).
+        Taking a depth of 3 bits means that the &quot;loudness&quot; of the song can vary between \(0\) and \(2^3 −1\) , so there are just 8 quantization levels to represent the loudness of the whole song (figure 1.6).
 
         <figure>
             <img src="img/fig1.6.svg" loading="lazy" width="94px" height="48px" style="width:70%;" alt="3 bit quantization">
             <figcaption>Figure 1.6: 3-bit quantization example</figcaption>
         </figure>
 
-        The higher the bit depth, the better the amplitude is approximated. The standard quantization is coded on <b>16 bits</b>. For instance, in the same previous analog signal with a 16-bit quantization, the amplitude can assume \(2^{16}\) values, which will give a much more precise accuracy (figure 1.7).
+        The higher the bit depth, the better the amplitude is approximated. The standard quantization resolution is <b>16 bits</b>. For instance, in the same previous analog signal with a 16-bit quantization, the amplitude can assume \(2^{16}\) values, which will result in a much higher accuracy (figure 1.7).
 
         <figure>
             <img src="img/fig1.7.svg" loading="lazy" width="94px" height="48px" style="width:70%;" alt="16 bit quantization">
@@ -149,14 +149,14 @@
             <img src="img/fig1.8.svg" loading="lazy" width="115px" height="40px" style="width:70%;" alt="FT representation">
             <figcaption>Figure 1.8: Visual representation of FT</figcaption>
         </figure>
-        For example, take an audio signal with 512-sample window, this formula must be applied 512 times:
+        For example, take an audio signal with 512 samples, this formula must be applied 512 times:
         <ul>
             <li>Once for \(n = 0\) to compute the 0<sup>th</sup> bin of frequencies</li>
             <li>Once for \(n = 1\) to compute the 1<sup>st</sup> bin of frequencies</li>
             <li>...</li>
             <li>Once for \(n = 511\) to compute the 511<sup>th</sup> bin of frequencies</li>
         </ul>
-        A bin of frequencies is a group of frequencies among two boundaries.<br>
+        A <b>bin of frequencies</b> is a group of frequencies among two boundaries.<br>
         The reason why the DFT can compute bins of frequencies and not exact frequencies is quite simple: the DFT gives a <b>discrete spectrum</b>. A bin of frequencies is the smallest unit of frequencies the DFT can compute and the size of the bin is called <b>spectral resolution</b> or <b>frequency resolution</b> which is given by the formula:
         \[B_S=\frac{F_S}{N}\]
 
@@ -164,7 +164,7 @@
         <ul>
             <li>\(B_S\) is the <b>bin size</b></li>
             <li>\(F_S\) is the <b>sampling rate</b></li>
-            <li>\(N\) is <b>the size of the window</b></li>
+            <li>\(N\) is the <b>number of samples</b> or the <b>size of the window</b> (more on this later)</li>
         </ul>
 
         For instance, taking a sampling rate of 8000 Hz and a window size of 512, the bin size will be of <b>15.6 Hz</b>, so:
@@ -183,7 +183,7 @@
             where:
             <ul>
                 <li>\(X(\odot)\) is the output of the DFT applied to \(x(t)\)</li>
-                <li>\((\odot)*\) denotes the conjugate</li>
+                <li>\((\odot)^*\) denotes the conjugate</li>
             </ul>
             <div class="title">Proof</div>
             Insert \((1)\) in the property \((2)\):
@@ -203,13 +203,13 @@
         So, the DFT algorithm needs to be repeated only half times the window size (256 times in this example).<br>
         To be accurate, most real-DFT implementations outputs an \(N/2 + 1\) length array, where \(N\) is the window size. Taking, as always, a sampling rate of 8000 Hz and a window size of 512 (with the bin size being 15.6 Hz):
         <ul>
-            <li>The 0<sup>th</sup> bin contains the so-called DC component or offset, being the sum of each sample in the window (see below)</li>
+            <li>The 0<sup>th</sup> bin contains the so-called <b>DC component</b> or <b>DC offset</b>, being the sum of each sample in the window (see <a href="#dcOffset">below</a>)</li>
             <li>The 1<sup>st</sup> bin contains the frequencies between 0 Hz and 15.6 Hz</li>
             <li>The 2<sup>nd</sup> bin contains the frequencies between 15.6 Hz and 31.2 Hz</li>
             <li>And so on</li>
         </ul>
         <blockquote>
-            <div class="title">Proof: DC component</div>
+            <div class="title" id="dcOffset">Proof: DC component</div>
             Calculate the DFT \((1)\) with \(n=0\):
             $$\begin{aligned}
             X(n) |_{n=0} &= \sum_{t=0}^{N-1} x(t)e^{-i\frac{2\pi t n}{N}}|_{n=0} \\
@@ -219,18 +219,18 @@
         The DC component is simply ignored by the algorithm implementation and, in most cases, equals to 0.
 
         <h4>1.4.2. Window function</h4>
-        Now the problem is partially solved: the DFT can be used to obtain the frequencies amplitude for (just to say) the first \(\frac{1}{10}\) second part of the song, for the second, the third and so on.<br>
-        The problem is that in this way a rectangular function is implicitly applied: a function that equals 1 for the song portion under analysis and 0 elsewhere (figure 1.9).
+        Now the problem is partially solved: the DFT can be used to obtain the frequencies amplitude for (just to say) the first \(\frac{1}{10}\) second part of the song, for the second, the third and so on: this process is called <b>signal windowing</b>, where only a part of a signal is analyzed at a time, instead of doing it all in one take.<br>
+        The problem is that in this way a <i>rectangular function</i> is implicitly applied: a function that equals 1 for the song portion under analysis and 0 elsewhere (figure 1.9).
         <figure style="float:right">
             <img src="img/fig1.9.svg" loading="lazy" width="49px" height="45px" style="width:100%;" alt="rectangular window">
             <figcaption>Figure 1.9: Rectangular window function example</figcaption>
         </figure>
 
         <br><br>
-        By windowing the audio signal, the audio signal is multiplied by a window function which depends on the piece of the audio signal under analysis. The usage of a window function produces <b>spectral leakage</b>. Spectral leakage is the appearance of new frequencies that does not exist inside the audio signal. The power of the real frequencies is leaked to others frequencies.
+        By windowing the audio signal, the audio signal is multiplied by a window function which depends on the piece of the audio signal under analysis. The usage of a window function produces <b>spectral leakage</b>: the power of a frequency leaks to the nearby other frequencies, making the DFT less accurate.
         <br><br>
-        Spectral leakage cannot be avoided but it can be controlled and reduced by choosing the right window function: there are many different window functions besides the rectangular one. Just to name a few: <i>triangular</i>, <i>Blackman</i>, <i>Hamming</i>, <i>Hann</i> and many others.<br>
-        When analyzing unknown very noisy data best choice is the Hann window function, defined by the following formula:
+        Spectral leakage cannot be avoided but it can be controlled and reduced by choosing the right window function: there are many different window functions besides the rectangular one. Just to name a few: <i>triangular</i>, <i>Blackman</i>, <i>Hamming</i>, <i>Hann</i>.<br>
+        When analyzing unknown very noisy data, the best choice is the Hann window function, defined by the following formula:
         \[w(n)=\frac{1}{2}\left(1-\cos\left(\frac{2\pi n}{N-1}\right)\right)\]
 
         Where:
@@ -248,7 +248,7 @@
 
         <h4>1.4.3. Downsampling and window size</h4>
         <b>Downsampling</b> is the process of reducing the sampling rate of a signal. Also, the window size can be reduced accordingly, taking the highest possible acceptable value (the value which gives an acceptable frequency resolution). For instance, resample a song from 44.1 kHz to 8 kHz and use a window size of just 512: in this way, there are fewer samples to analyze and the DFT is applied less frequently.<br>
-        The only difference is that the resampled song will only have frequencies from 0 to 4 kHz (see the Nyquist-Shannon theorem), but the most important part of the song is still present in this range of frequencies.
+        The only difference is that the resampled song will only have frequencies from 0 to 4 kHz (see the <a href="#nyquist">Nyquist-Shannon theorem</a>), but the most important part of the song is still present in this range of frequencies.
     </div>
 
     <div id="page1" class="page">
