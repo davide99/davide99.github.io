@@ -297,7 +297,7 @@
         </figure>
 
         <h3>2.3. Peaks finder and fingerprinting</h3>
-        The spectrogram is then processed in order to obtain its most significant information. It is divided into a sort of a grid where each cell of the grid has the following size:
+        The spectrogram is then processed in order to obtain its most significant information. It is divided into a sort of a grid where each cell has the following size:
         <ul>
             <li>Width equals to C</li>
             <li>Height equals to a range of frequencies (called <b>band</b>)</li>
@@ -323,9 +323,9 @@
         </figure>
 
         <h4 id="DividingSpectrogramInBands">2.3.1. Dividing the spectrogram in bands</h4>
-        There exist at least a few ways to divide the spectrogram in meaningful frequency ranges, but the most interesting one is the mel scale. It was experimentally discovered that the higher the frequency the hardest for a human hear to notice the difference between relatively close but different frequencies.<br>
-        In other words, humans perceive frequencies on a <i>logarithmic scale</i>, so that the difference between 500 and 1000 Hz is noticeable, but this is not true for the difference between 10000 and 10000 Hz.<br>
-        The formula to convert between the Hertz (linear) scale and the <b>mel</b> (logarithmic) scale is defined as:
+        There exist at least a few ways to divide the spectrogram in meaningful frequency ranges, but the most interesting one is the <b>mel scale</b>. It was experimentally discovered that the higher the frequency the hardest for a human hear to notice the difference between relatively close but different frequencies.<br>
+        In other words, humans perceive frequencies on a <i>logarithmic scale</i>, so that the difference between 500 and 1000 Hz is more noticeable then, to say, the difference between 10000 and 10500 Hz.<br>
+        The formula to convert between the Hertz (linear) scale and the mel (logarithmic) scale is defined as:
 
         \[f(m)=700\left(10^{\frac{m}{2595}}-1\right) \tag{3}\]
 
@@ -347,7 +347,7 @@
             <li>A mel band size \(\delta\) is chosen</li>
             <li>
                 Compute the mel bands boundaries as:
-                \[\left\{0, \alpha, \alpha + \delta, \alpha + 2\delta, ..., \alpha + k\delta \right\}\
+                \[\left\{0, \alpha, \alpha + \delta, \alpha + 2\delta, ..., \alpha + k\delta \right\}\]
             </li>
             <li>
                 Convert the mel band boundaries back to Hertz with formula \(3\):
@@ -355,15 +355,15 @@
             </li>
         </ol>
         
-        Each band will contain roughly the same &quot;amount of information&quot; from a listener point of view.
+        Each band will contain roughly the same &quot;amount of information&quot; from the listener point of view.
 
         <h3>2.4. Links structure</h3>
-        Now, having a way to compute a frequency summary of an audio signal, the recognition process should be straight enough: each point of the recording should be compared with the points of the full song. Though it works well, this simple approach requires a lot of computation time.<br>
-        Instead of comparing each point one by one, the idea is to look for multiple points at the same time. This group of points is called links, and it represents a relationship between a point and some others. In order to be sure that both the recording and the full song will generate the same links, a rule must be defined: spectrogram points must be sorted in ascending order according to the window they belong to.
+        Now, having a way to compute a frequency summary of an audio signal, the recognition process should be straight enough: each point of the recording should be compared with the points of the full song. Though it works well, this simple approach requires a lot of computation time and power.<br>
+        Instead of comparing each point one by one, the idea is to look for multiple points at the same time. This group of points is called <b>link</b>, and it represents a relationship between a point and some others. In order to be sure that both the recording and the full song will generate the same links, a rule must be defined: spectrogram points must be sorted in ascending order according to the window they belong to.
         <br><br>
-        So, given a point \(\alpha\) (called address) and an initially empty set of points A, the algorithm will put in A all the other points \(\beta\) whose absolute window difference compared to the point \(\alpha \) is between 1 and 3 and are in the same band as \(\alpha\). In symbols:
+        So, given a point \(\alpha\) (called address) and an initially empty set of points \(A\), the algorithm will put in \(A\) all the other points \(\beta\) whose absolute window difference compared to the point \(\alpha \) is between 1 and 3 and are in the same band as \(\alpha\). In symbols:
         \[ \beta\in A\Leftrightarrow(1\leq\beta\textrm{.window}-\alpha\textrm{.window}&lt;3)\wedge(\beta\textrm{.band}=\alpha\textrm{.band}) \]
-        For each point b belonging to A a link is computed and added to a list (figure 2.6). The link structure is the following (figure 2.7):
+        For each point \(\beta\) belonging to \(A\), a link is computed and added to a list (figure 2.6). The link structure is the following (figure 2.7):
 
         \[
             \textrm{link}
@@ -380,7 +380,7 @@
             <li>\(h\) is a generic hash function</li>
         </ul>
 
-        The produced links are quite reproducible, even in the presence of noise and codec compression. Another advantage is that in this way all the times are relative.<br>
+        By doing so the links are quite reproducible, even in the presence of noise and codec compression. Another advantage is that in this way all the times are relative.<br>
         On the server side each link is stored in a database along with the song information.
 
         <figure>
@@ -396,10 +396,10 @@
         It is assumed that the full song links are in the database. Now a client, after recording a small piece of song, computes on its own the links of the recording and sends them to the server. The server has to:
         <ol>
             <li>Put the recording links in a temporary in-memory table</li>
-            <li>Relate the full songs links table with the recording table if they share the same hash</li>
+            <li>Relate the full songs links table with the recording table ones if they share the same hash</li>
             <li>Count the tuples grouped by the time difference between the recording links and the full song links (links of the same song share the same time difference) and the song id</li>
             <li>Descending sort the tuples according to the count field</li>
-            <li>The topmost tuple obtained contains the id of the most likely matching</li>
+            <li>The topmost tuple obtained contains the id of the most likely match</li>
         </ol>
     </div>
 
