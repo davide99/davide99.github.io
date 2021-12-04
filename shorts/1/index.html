@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Unbricking a BIOS-bricked motherboard</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="Descrizione">
+    <meta name="author" content="Davide Pisanò">
+
+    <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": "Music recognition AI",
+          "image": [
+            "https://davidesnotes.com/articles/2/img/SEO/1x1.webp",
+            "https://davidesnotes.com/articles/2/img/SEO/4x3.webp",
+            "https://davidesnotes.com/articles/2/img/SEO/16x9.webp"
+           ],
+          "datePublished": "2021-09-04T13:20:37+02:00",
+          "dateModified": "2021-09-04T17:08:26+02:00",
+          "author": [{
+              "@type": "Person",
+              "name": "Davide Pisanò",
+              "url": "https://davidesnotes.com"
+            }]
+        }
+    </script>
+
+    <link rel="stylesheet" href="../../style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0">
+</head>
+
+<body>
+    <h1>Unbricking a BIOS-bricked motherboard</h1>
+
+    Has that ever been in a situation when flashing a new BIOS goes wrong and your motherboard become a useless brick? We've all been there, so keep on reading.
+    
+    <h2>How to flash a new BIOS without the motherboard even POSTing</h2>
+    <i>Note:</i> This tutorial is meant for AMI BIOSes. Said that, you can google the procedure for your particolar BIOS.
+    <br>
+
+    <img src="img/bios_floppy.WEBP" loading="lazy" width="2971px" height="3926px" style="width:30%;float:right" alt="Reading on floppy">
+
+    <ol>
+        <li>Download a BIOS for your motherboard from the vendor website</li>
+        <li>
+            If it's an EXE or ZIP try to extract the files within with something like 7-Zip. The BIOS file should be:
+            <ul>
+                <li>Usually ending with .ROM</li>
+                <li>Being of a power of 2 size (like 1MB, 2MB, 4MB, ...)</li>
+            </ul>
+        </li>
+        <li>If your motherboard is old enough to have a floppy connector go head and plug that old crap</li>
+        <li>If (lucky you) your motherboard doesn't have any floppy connector it means that we can just use a normal USB key</li>
+        <li>Find a floppy, or if you are lucky a USB key and format them using FAT</li>
+        <li>
+            Take the BIOS file, rename it to AMIBOOT.ROM and copy it to the floppy/USB key
+            <ul>
+                <li>If your motherboard is by HP use instead HPBIOS.ROM</li>
+            </ul>
+        </li>
+        <li>Insert the floppy/USB key in the offending computer</li>
+        <li>If your motherboard has a PS/2 keyboard connector please one it, otherwise just use your normal USB keyboard</li>
+        <li>While powering on your PC press and hold CTRL+HOME until you see the floppy drive/USB key LED blinking</li>
+        <li>Wait until you hear 5 beeps</li>
+        <li>Reboot</li>
+    </ol>
+    
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</body>
+</html>
