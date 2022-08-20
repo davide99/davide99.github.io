@@ -116,7 +116,7 @@ blockquote > .title {
     background: linear-gradient(to right, #777, #333, #777);
     display: block;
     height:1px;
-    width: 900px;
+    max-width: 900px;
     bottom: 0;
     margin-top: 0.5em;
     margin-bottom: 0.5em;
