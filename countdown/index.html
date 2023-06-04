@@ -34,7 +34,7 @@
 </head>
 <body>
 <div id="container">
-    <div class="content">Felipe e Gloria scenderanno tra:</div>
+    <div class="content">I felipes scenderanno tra:</div>
     <div class="content" id="countdown">AA</div>
 </div>
 
@@ -52,12 +52,19 @@
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        countdownDiv.innerHTML = `${months} mesi, ${days} giorni, ${hours} ore, ${minutes} minuti e ${seconds} `;
-        if (seconds === 1) {
-            countdownDiv.innerHTML += "secondo";
-        } else {
-            countdownDiv.innerHTML += "secondi";
-        }
+        let stringa = "";
+        if (months > 0)
+            stringa += `${months} ` + (months === 1 ? 'mese' : 'mesi');
+        if (days > 0)
+            stringa += `, ${days} ` + (days === 1 ? 'giorno' : 'giorni');
+        if (hours > 0)
+            stringa += `, ${hours} ` + (hours === 1 ? 'ora' : 'ore');
+        if (minutes > 0)
+            stringa += `, ${minutes} ` + (minutes === 1 ? 'minuto' : 'minuti');
+        if (seconds > 0)
+            stringa += ` e ${seconds} ` + (seconds === 1 ? 'secondo' : 'secondi');
+
+        countdownDiv.innerHTML = stringa;
     }
 
     countdown();
