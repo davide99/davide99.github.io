@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Countdown squacquerato</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #20262E;
+            color: #E9E8E8;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .content {
+            text-align: center;
+            font-size: 2em;
+        }
+
+        .content-small {
+            text-align: center;
+            font-size: 1em;
+        }
+
+    </style>
+</head>
+<body>
+<div id="container">
+    <div class="content">La festa sarà tra:</div>
+    <div class="content" id="countdown">AA</div>
+</div>
+
+<script>
+    const countdownDiv = document.getElementById("countdown");
+    const endDate = new Date(2023, 7, 5);
+    const audioContext = new AudioContext();
+    const audioUrl = 'piede.wav';
+    
+    function countdown() {
+        const now = new Date();
+        const distance = endDate - now;
+
+        const months = Math.floor(distance / (1000 * 60 * 60 * 24 * 30));
+        const days = Math.floor((distance % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        let stringa = "";
+        if (months > 0)
+            stringa += `${months} ` + (months === 1 ? 'mese' : 'mesi') + ', ';
+        if (days > 0)
+            stringa += `${days} ` + (days === 1 ? 'giorno' : 'giorni') + ', ';
+        if (hours > 0)
+            stringa += `${hours} ` + (hours === 1 ? 'ora' : 'ore') + ', ';
+        if (minutes > 0)
+            stringa += `${minutes} ` + (minutes === 1 ? 'minuto' : 'minuti') + ', ';
+        if (seconds > 0)
+            stringa += `${seconds} ` + (seconds === 1 ? 'secondo' : 'secondi');
+
+        if (stringa.slice(-1) === " ")
+            stringa = stringa.substring(0, stringa.length - 2);
+
+        countdownDiv.innerHTML = stringa;
+
+        //Riproduzione audio
+        fetch(audioUrl)
+            .then(response => response.arrayBuffer())
+            .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
+            .then(audioBuffer => {
+                const sourceNode = audioContext.createBufferSource();
+                sourceNode.buffer = audioBuffer;
+
+                // Collega i nodi e avvia la riproduzione
+                sourceNode.connect(audioContext.destination);
+                sourceNode.start();
+            })
+            .catch(error => {
+                console.error(error);
+            });
+    }
+
+    countdown();
+    setInterval(countdown, 1000);
+</script>
+</body>
+</html>
