@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mappa Interattiva - Edicole Votive Casarano</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <style>
+        body { background-color: #f8f9fa; color: #343a40; font-family: 'Arial', sans-serif; }
+        #map { height: 600px; width: 100%; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); }
+        .container { max-width: 1000px; margin: auto; padding-top: 20px; padding: 20px; }
+        h1 { text-align: center; margin-bottom: 20px; }
+        .intro { text-align: center; margin-bottom: 30px; font-size: 1.1rem; color: #555; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mappa delle Edicole Votive di Casarano</h1>
+        <p class="intro">Le edicole votive rappresentano un patrimonio storico e culturale di Casarano. 
+        Questi piccoli monumenti sacri raccontano la devozione popolare e la storia della comunità locale. 
+        Scopri la loro posizione sulla mappa interattiva e approfondisci la loro storia cliccando sui marker.</p>
+        <div id="map"></div>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([40.008761, 18.164070], 15); // Casarano
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        
+        const markers = [
+            { lat: 40.0087142, lon: 18.1616292, name: "San Michele", url: "#san-michele-cavour" },
+            { lat: 40.0079062, lon: 18.1614043, name: "San Rocco (Via A. Cappellini)", url: "#san-rocco-cappellini" },
+            { lat: 40.008630, lon: 18.159765, name: "Crocifisso (Corso XX Settembre)", url: "#crocifisso-xx-settembre" },
+            { lat: 40.009068, lon: 18.161811, name: "San Rocco (Via Vitali)", url: "#san-rocco-vitali" },
+            { lat: 40.007839, lon: 18.161562, name: "Madonna del Carmine", url: "#madonna-carmine" },
+            { lat: 40.008761, lon: 18.164070, name: "San Giovanni Elemosiniere", url: "#san-giovanni-elem" },
+            { lat: 40.008053, lon: 18.162739, name: "Sant'Antonio", url: "#sant-antonio" },
+            { lat: 40.013258, lon: 18.166583, name: "San Rocco (Via Fratelli Bandiera)", url: "#san-rocco-bandiera" },
+            { lat: 40.007046, lon: 18.161202, name: "San Giuseppe", url: "#san-giuseppe" },
+            { lat: 40.012124, lon: 18.167079, name: "San Luigi Gonzaga", url: "#san-luigi" },
+            { lat: 40.008394, lon: 18.162230, name: "Madonna del Carmine (Via Principe Amedeo)", url: "#madonna-carmine-amedeo" },
+            { lat: 40.012026, lon: 18.167878, name: "Sant'Antonio (Via De Pinedo)", url: "#santantonio-pinedo" },
+            { lat: 40.005113, lon: 18.161452, name: "San Rocco e Gesù Cristo", url: "#san-rocco-gesu" }
+        ];
+        
+        markers.forEach(({ lat, lon, name, url }) => {
+            const marker = L.marker([lat, lon]).addTo(map);
+            marker.bindTooltip(name, { permanent: false, direction: "right" });
+            marker.on('click', () => window.open('dettagli.html' + url));
+        });
+    </script>
+</body>
+</html>
