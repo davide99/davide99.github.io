@@ -23,7 +23,7 @@ jobs:
       
       - name: Minify HTML
         run: |
-          mkdir dist
+          mkdir -p dist
           find . -name "*.html" -not -path "./dist/*" -exec sh -c '
             for f do
               out="dist/$f"
@@ -49,6 +49,16 @@ jobs:
               out="dist/$f"
               mkdir -p "$(dirname "$out")"
               cleancss "$f" -o "$out"
+            done
+          ' sh {} +
+
+      - name: Copy other files (non-minified)
+        run: |
+          find . -type f -not -path "./dist/*" -exec sh -c '
+            for f do
+              out="dist/$f"
+              mkdir -p "$(dirname "$out")"
+              cp "$f" "$out"
             done
           ' sh {} +
       
