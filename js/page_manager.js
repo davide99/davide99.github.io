@@ -1,55 +1,40 @@
-class PageManager {
-    constructor(last_page){
-        this.page = 0; //current page
-        this.last_page = last_page;
+let currentPage = 0;
+let pages = [];
+let totalPages = 0;
 
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has("page"))
-            this.page = parseInt(urlParams.get("page"));
-
-        var pm = this;
-
-        window.addEventListener("DOMContentLoaded", function(event) {
-            pm._showPage();
-        });
-    }
-
-    nextPage() {
-        if (this.page === this.last_page)
-            this.page = 0;
-        else
-            this.page++;
-        
-        this._showPage();
-    }
-
-    prevPage() {
-        if (this.page === 0)
-            this.page = this.last_page;
-        else
-            this.page--;
-        
-        this._showPage();
-    }
-
-    gotoPage(page) {
-        this.page = page;
-        this._showPage();
-    }
-
-    _showPage() {
-        var pm = this;
-
-        Array.from(document.getElementsByClassName("page")).forEach(function(element, index) {
-            if(index === pm.page) {
-                element.style.display = "block";
-                if(index !== 0)
-                    window.history.pushState({page: index}, "", "?page=" + index);
-                else
-                    window.history.pushState({}, "", window.location.href.substring(0, window.location.href.lastIndexOf('?')));
-            } else {
-                element.style.display = "none";
-            }
-        });
-    }
+function showPage(index) {
+    pages.forEach((p, i) => {
+        p.style.display = (i === index) ? 'block' : 'none';
+    });
+    currentPage = index;
+    _updateUrlWithPage(index)
 }
+
+function goNext() {
+    currentPage = (currentPage + 1) % totalPages;
+    showPage(currentPage);
+}
+
+function goPrev() {
+    currentPage = (currentPage - 1 + totalPages) % totalPages;
+    showPage(currentPage);
+}
+
+function _updateUrlWithPage(index) {
+    const url = new URL(window.location);
+    url.searchParams.set('page', index);
+    history.replaceState(null, '', url);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    let page = parseInt(params.get('page'), 10);
+
+    if (isNaN(page) || page < 0 || page > totalPages) {
+        page = 0;
+    }
+
+    pages = document.querySelectorAll('.page');
+    totalPages = pages.length;
+    showPage(page);
+});

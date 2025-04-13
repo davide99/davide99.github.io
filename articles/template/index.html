@@ -28,12 +28,7 @@
 
     <link rel="stylesheet" href="../../style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0">
-    <script src="../../js/position_hack.js"></script>
     <script src="../../js/page_manager.js"></script>
-    <script>
-        //2 = numero ultima pagina
-        const pm = new PageManager(2);
-    </script>
 </head>
 
 <body>
@@ -51,8 +46,8 @@
     </div>
 
     <div id="navigation-bar">
-        <a href="#" onclick="pm.prevPage();" id="navigate-left">&lt;&lt; Previous</a>
-        <a href="#" onclick="pm.nextPage();" id="navigate-right">Next &gt;&gt;</a>
+        <a href="#" onclick="goPrev();" id="navigate-left">&lt;&lt; Previous</a>
+        <a href="#" onclick="goNext();" id="navigate-right">Next &gt;&gt;</a>
     </div>
 
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>

@@ -29,11 +29,7 @@
 
     <link rel="stylesheet" href="../../style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0">
-    <script src="../../js/position_hack.js"></script>
     <script src="../../js/page_manager.js"></script>
-    <script>
-        const pm = new PageManager(5);
-    </script>
 </head>
 
 <body>
@@ -45,7 +41,7 @@
         <source type="video/mp4" src="img/challenge_accepted.mp4">
     </video>
 
-    <b>TL;DR</b>: Jump to the <a href="#" onclick="pm.gotoPage(5);">last section</a>
+    <b>TL;DR</b>: Jump to the <a href="#" onclick="showPage(5);">last section</a>
 
     <div id="page0" class="page">
         <h2>0. The main idea</h2>
@@ -475,7 +471,7 @@ void findFunc(uintptr_t dllBase, uint32_t* hashes, void** ptrs, size_t size) {
 
         <p id="kernel32_path"></p>
         Notice how we need to link <code>kernel32.lib</code> because Crinkler emits some code that needs to be linked against it. If you have a Windows 10 SDK installed, you can find your x86 <code>kernel32.lib</code> file under:
-    <pre><code class="plaintext">C:\Program Files (x86)\Windows Kits\10\Lib\&lt;<b>version</b>&gt;\um\x86</code></pre>
+    <pre><code class="plaintext">C:\Program Files (x86)\Windows Kits\10\Lib\&lt;version&gt;\um\x86</code></pre>
         Replace <code>&lt;<b>version</b>&gt;</code> with the newer version you have installed.
         <br><br>
         Read the following section to know the latest size.
@@ -517,13 +513,13 @@ void findFunc(uintptr_t dllBase, uint32_t* hashes, void** ptrs, size_t size) {
     </div>
 
     <div id="navigation-bar">
-        <a href="#" onclick="pm.prevPage();" id="navigate-left">&lt;&lt; Previous</a>
-        <a href="#" onclick="pm.nextPage();" id="navigate-right">Next &gt;&gt;</a>
+        <a href="#" onclick="goPrev();" id="navigate-left">&lt;&lt; Previous</a>
+        <a href="#" onclick="goNext();" id="navigate-right">Next &gt;&gt;</a>
     </div>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/languages/c.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/c.min.js"></script>
     <script>hljs.highlightAll();</script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
