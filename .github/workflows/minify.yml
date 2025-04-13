@@ -24,21 +24,33 @@ jobs:
       - name: Minify HTML
         run: |
           mkdir dist
-          for file in $(find . -name '*.html'); do
-            html-minifier --collapse-whitespace --remove-comments --minify-css true --minify-js true "$file" -o "dist/$file"
-          done
+          find . -name "*.html" -not -path "./dist/*" -exec sh -c '
+            for f do
+              out="dist/$f"
+              mkdir -p "$(dirname "$out")"
+              html-minifier --collapse-whitespace --remove-comments --minify-css true --minify-js true "$f" -o "$out"
+            done
+          ' sh {} +
       
       - name: Minify JS
         run: |
-          for file in $(find . -name '*.js'); do
-            terser "$file" -o "dist/$file" --compress --mangle
-          done
+          find . -name "*.js" -not -path "./dist/*" -exec sh -c '
+            for f do
+              out="dist/$f"
+              mkdir -p "$(dirname "$out")"
+              terser "$f" -o "$out" --compress --mangle
+            done
+          ' sh {} +
       
       - name: Minify CSS
         run: |
-          for file in $(find . -name '*.css'); do
-            cleancss "$file" -o "dist/$file"
-          done
+          find . -name "*.css" -not -path "./dist/*" -exec sh -c '
+            for f do
+              out="dist/$f"
+              mkdir -p "$(dirname "$out")"
+              cleancss "$f" -o "$out"
+            done
+          ' sh {} +
       
       - name: Deploy to Github Pages
         uses: peaceiris/actions-gh-pages@v3
