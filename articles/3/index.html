@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Handling large data loads with Spring Batch partitioning</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="How to handle large data loads with Spring Batch using partitioning">
+    <meta name="keywords" content="spriing, batch, java, partitioner, partitioning, app, application, csv, big, data, postgres, sql, parallel, processing">
+    <meta name="author" content="Davide Pisanò">
+
+    <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": "Handling large data loads with Spring Batch partitioning",
+          "image": [
+            "https://davidesnotes.com/articles/1/img/SEO/1x1.webp",
+            "https://davidesnotes.com/articles/1/img/SEO/4x3.webp",
+            "https://davidesnotes.com/articles/1/img/SEO/16x9.webp"
+           ],
+          "datePublished": "2025-05-11T12:45:00+02:00",
+          "dateModified": "2025-05-11T12:45:00+02:00",
+          "author": [{
+              "@type": "Person",
+              "name": "Davide Pisanò",
+              "url": "https://davidesnotes.com"
+            }]
+        }
+    </script>
+
+    <link rel="stylesheet" href="../../style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0">
+    <script src="../../js/page_manager.js"></script>
+</head>
+
+<body>
+    <h1>Handling large data loads with Spring Batch partitioning</h1>
+
+    Struggling with slow performance when processing large datasets in Spring Batch? You're not alone. <i>Spring Batch</i> is powerful, but handling big data loads can expose its limitations—unless you know how to scale it properly.
+    <br>
+    In this article, I'll show you how to leverage the <code>Partitioner</code> class to efficiently parallelize your jobs, split the workload smartly, and speed up I/O-bound operations like database access.
+
+    <div id="page0" class="page">
+        <h2>1. Maven configuration</h2>
+        We'll using a couple dependencies:
+        <ul>
+            <li>Spring Boot starter Batch</li>
+            <li>Spring Boot starter Data JPA</li>
+            <li>Postgres driver</li>
+            <li>Lombok (optional)</li>
+            <li>Spring Boot starter Validation (optional)</li>
+        </ul>
+            
+        The full <code>pom.xml</code> is available in the <a href="#">repository</a>.
+    </div>
+
+    <div id="page1" class="page">
+        <h2>2. Spring Boot configuration</h2>
+        When configuring the Spring Boot application, we need to configure the database connection as follows:
+<pre><code class="language-yaml">
+spring:
+    application:
+        name: PartitionerTest
+    batch:
+        jdbc:
+            initialize-schema: always
+    datasource:
+        url: "jdbc:postgresql://localhost:5432/postgres"
+        username: "postgres"
+        password: "postgres"
+    jpa:
+        hibernate:
+            ddl-auto: update
+</code></pre>
+        Here's what we're telling Spring Boot:
+        <ul>
+            <li>The name of our application</li>
+            <li>To initialize Spring Batch tables (used to store job and step execution metadata)</li>
+            <li>To align the database schema schema with our JPA entity definitions</li>
+        </ul>
+
+        <br>
+        <b>Warning</b>: keep in mind that the last bullet point is <i>very dangerous</i> to use in a non-development environment, so handle it with care.
+    </div>
+
+    <div id="page2" class="page">
+        <h2>3. Choosing a dataset</h2>
+        To properly test the performance of our batch job, we need a dataset with a significant amount of data. After a brief search on Kaggle, I came across the 
+        <a href="https://www.kaggle.com/datasets/paultimothymooney/stock-market-data">Stock Market Data (NASDAQ, NYSE, S&P500)</a>, which perfectly fits our needs. 
+        Big thanks to the author for making it publicly available.
+        <br>
+        The dataset consists of multiple CSV files, each representing historical price data for a specific stock. Each file is named after its stock ticker. 
+        For every ticker (i.e., each CSV), we have:
+        <ul>
+            <li>A <b>date</b> representing the reference trading day</li>
+            <li>Various <b>price metrics</b>, such as open, close, high, low</li>
+            <li>Other fields like <b>volume</b> and <b>adjusted close</b>, which may or may not be useful depending on the use case</li>
+        </ul>
+        
+        Based on this structure, let's define a corresponding JPA entity to model our data:
+<pre><code class="language-java">
+@Setter
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(
+    name = "stock",
+    uniqueConstraints = {@UniqueConstraint(columnNames = {"ticker", "date"})},
+    indexes = {@Index(columnList = "ticker")}
+)
+public class StockEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Long id;
+
+    @Column(name = "ticker", length = 10, nullable = false)
+    private String ticker;
+
+    @Column(name = "date", nullable = false)
+    private LocalDate date;
+
+    @Column(name = "low", nullable = false, precision = 50, scale = 20)
+    private BigDecimal low;
+
+    @Column(name = "open", nullable = false, precision = 50, scale = 20)
+    private BigDecimal open;
+
+    @Column(name = "volume", nullable = false, precision = 50)
+    private BigInteger volume;
+
+    @Column(name = "high", nullable = false, precision = 50, scale = 20)
+    private BigDecimal high;
+
+    @Column(name = "close", nullable = false, precision = 50, scale = 20)
+    private BigDecimal close;
+
+    @Column(name = "adjusted_close", nullable = false, precision = 50, scale = 20)
+    private BigDecimal adjustedClose;
+}
+</code></pre>
+
+    A few notes:
+    <ul>
+        <li>IDs are generated using a database sequence, which is generally one of the fastest strategies for ID generation</li>
+        <li>The combination of <code>ticker</code> and <code>date</code> is enforced as a unique constraint to avoid duplicate entries for the same stock on the same day</li>
+    </ul>
+
+    After defining the entity, I created a Spring Batch job (<code>FileLoaderFlow</code>, available in the repository) to parse and load the CSV files into the <code>stock</code> table.  
+    I'll skip the details of this import step, as it's not the focus of this article.
+    <br>
+    For reference, the final table contains <strong>3,258,423</strong> rows — a decent volume of data to benchmark against.
+    </div>
+
+    <div id="page3" class="page">
+        <h2>4. Defining the intensive task</h2>
+        Now that we have a populated table, we can define a non-trivial processing task:  
+        for each record in the <code>stock</code> table, we want to compute the <b>mean price</b>, defined as the average between the <code>high</code> and <code>low</code> prices.
+        <br>
+        Given the table contains <strong>3,258,423</strong> rows, this operation involves a significant load — perfect for performance testing.
+
+        <h3>4.1: Create a reader</h3>
+        We define a <code>JpaPagingItemReader</code> that selects only the necessary fields, projecting them into a DTO:
+
+<pre><code class="language-java">
+@Bean
+@StepScope
+public JpaPagingItemReader&lt;StockMeanDTO&gt; itemReader(
+        EntityManagerFactory entityManagerFactory
+) {
+    return new JpaPagingItemReaderBuilder&lt;StockMeanDTO&gt;()
+            .name("meanReader")
+            .entityManagerFactory(entityManagerFactory)
+            .queryString("SELECT new com.davide99.partitionertest.mean.StockMeanDTO(e.id, e.high, e.low) " +
+                            "FROM StockEntity e ORDER BY e.id")
+            .pageSize(PAGE_SIZE)
+            .build();
+}
+</code></pre>
+
+        Where <code>StockMeanDTO</code> looks like this:
+<pre><code class="language-java">
+@Getter
+public class StockMeanDTO {
+    private final Long id;
+    private final BigDecimal mean;
+
+    public StockMeanDTO(Long id, BigDecimal high, BigDecimal low) {
+        this.id = id;
+        this.mean = high.add(low)
+                        .divide(BigDecimal.valueOf(2), RoundingMode.HALF_UP);
+    }
+}
+</code></pre>
+
+        <h3>4.2: Add the <code>mean</code> field to the entity</h3>
+        We extend the entity to store the computed mean value:
+
+<pre><code class="language-java">
+@Column(name = "mean", nullable = false, precision = 50, scale = 20)
+@ColumnDefault("0")
+private BigDecimal mean = BigDecimal.ZERO;
+</code></pre>
+
+        <h3>4.3: Add a repository method for updates</h3>
+
+        We create a custom method to update the mean field based on the ID:
+
+<pre><code class="language-java">
+public interface StockRepository extends JpaRepository&lt;StockEntity, Long&gt; {
+    @Modifying
+    @Query("UPDATE StockEntity e SET e.mean = :mean WHERE e.id = :id")
+    void updateMeanById(@Param("mean") BigDecimal mean, @Param("id") Long id);
+}
+</code></pre>
+
+        <h3>4.4: Define the writer</h3>
+
+        Finally, we implement the writer that persists the computed values:
+
+<pre><code class="language-java">
+@Bean
+public ItemWriter&lt;StockMeanDTO&gt; itemWriter(StockRepository repository) {
+    return chunk -&gt; chunk.forEach(
+        dto -&gt; repository.updateMeanById(dto.getMean(), dto.getId())
+    );
+}
+</code></pre>
+
+        With this setup, we now have:
+        <ul>
+            <li>A <code>reader</code> that fetches data and computes the mean</li>
+            <li>A <code>writer</code> that performs an update for each record</li>
+        </ul>
+
+        <h3>4.5: Results</h3>
+        With the full pipeline in place, I ran the batch job on the full dataset of 3,258,423 rows.
+        <br>
+        The execution took exactly <strong>31 minutes and 15 seconds</strong> to complete.
+        <br>
+        This gives us a baseline performance metric for a single-threaded execution of the task. We'll use this as a reference when comparing with other solutions.
+    </div>
+
+    <div id="page4" class="page">
+        <h2>5. Parallelizing the task with a Partitioner</h2>
+        To improve performance, we can parallelize the batch processing using a <strong>Partitioner</strong>. This mechanism splits the workload into multiple independent chunks, each handled by a separate thread.
+
+        <h3>5.1 Master/Slave Step</h3>
+        The Spring Batch <strong>master step</strong> is responsible for creating partitions using the partitioner and assigning them to worker steps (the <strong>slave step</strong>), which execute the actual logic.
+        
+        You can visualize it like this:  
+        <em>(Insert image)</em>
+        
+        We also need a <code>TaskExecutor</code>, which will run multiple slave steps in parallel. Each slave will process a subset of data defined by a key — in our case, the <code>ticker</code>.
+
+        <h3>5.2 Partition key selection</h3>
+        We need a way to split the data. The <code>ticker</code> is a perfect candidate, as it's already part of our data and defines a natural subset.
+        <br>
+        Add this method to the repository:
+
+<pre><code class="language-java">
+@Query("SELECT DISTINCT e.ticker FROM StockEntity e")
+Set&lt;String&gt; findAllTickers();
+</code></pre>
+
+        <h3>5.3 Defining the Partitioner</h3>
+        We implement a custom <code>Partitioner</code> which adds the ticker value to the <code>ExecutionContext</code> of each partition:
+
+<pre><code class="language-java">
+@Component
+@RequiredArgsConstructor
+@Profile(MeanPartitionedFlow.JOB_NAME)
+public class TickerPartitioner implements Partitioner {
+    private final StockRepository repository;
+
+    @Override
+    @NonNull
+    public Map&lt;String, ExecutionContext&gt; partition(int gridSize) {
+        return repository.findAllTickers().stream().collect(Collectors.toMap(
+                ticker -&gt; ticker,
+                ticker -&gt; {
+                    final ExecutionContext context = new ExecutionContext();
+                    context.putString("ticker", ticker);
+                    return context;
+                }
+        ));
+    }
+}    
+</code></pre>
+
+    <b>Note</b>: We're ignoring the <code>parameter</code>. If there are n tickers, we create n partitions. The actual parallelism is controlled by the thread pool (<code>TaskExecutor</code>) which can run up to m < n tasks concurrently.
+
+    <h3>5.4 Master step</h3>
+    The master step uses our partitioner and delegates to the slave step:
+
+<pre><code class="language-java">
+@Bean
+public Step masterStep(
+    JobRepository jobRepository,
+    TickerPartitioner partitioner,
+    Step slaveStep,
+    TaskExecutor taskExecutor
+) {
+    return new StepBuilder(MASTER_STEP_NAME, jobRepository)
+        .partitioner(SLAVE_STEP_NAME, partitioner)
+        .step(slaveStep)
+        .taskExecutor(taskExecutor)
+        .gridSize(1) // Unused in our case
+        .build();
+}    
+</code></pre>
+
+    <b>Note</b>: We're ignoring the <code>parameter</code>. If there are n tickers, we create n partitions. The actual parallelism is controlled by the thread pool (<code>TaskExecutor</code>) which can run up to m < n tasks concurrently.
+
+    <h3>5.5 Slave step</h3>
+    The slave step is identical to the original non-partitioned step:
+
+<pre><code class="language-java">
+@Bean
+public Step slaveStep(
+    ItemReader&lt;StockMeanDTO&gt; reader,
+    ItemWriter&lt;StockMeanDTO&gt; writer,
+    PlatformTransactionManager transactionManager,
+    JobRepository jobRepository
+) {
+    return new StepBuilder(SLAVE_STEP_NAME, jobRepository)
+        .&lt;StockMeanDTO, StockMeanDTO&gt;chunk(CHUNK_SIZE, transactionManager)
+        .reader(reader)
+        .writer(writer)
+        .build();
+}
+</code></pre>
+
+    <h3>5.6 Reader adjusted to use the ticker</h3>
+    The reader is updated to filter by ticker using the value injected in the context by the partitioner:
+
+<pre><code class="language-java">
+@Bean
+@StepScope
+public JpaPagingItemReader<StockMeanDTO> itemReader(
+    EntityManagerFactory entityManagerFactory,
+    @Value("#{stepExecutionContext['ticker']}") String ticker
+) {
+    return new JpaPagingItemReaderBuilder<StockMeanDTO>()
+        .name("meanReader")
+        .entityManagerFactory(entityManagerFactory)
+        .queryString("SELECT new com.davide99.partitionertest.mean.StockMeanDTO(e.id, e.high, e.low) " +
+            "FROM StockEntity e " +
+            "WHERE e.ticker = :ticker " +
+            "ORDER BY e.id")
+        .parameterValues(Map.of("ticker", ticker))
+        .pageSize(PAGE_SIZE)
+        .build();
+}
+</code></pre>
+
+    <h3>5.7 Task executor configuration</h3>
+    We define a thread pool to handle parallel execution:
+
+<pre><code class="language-java">
+@Bean
+public TaskExecutor taskExecutor() {
+    final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    executor.setCorePoolSize(8);
+    executor.setMaxPoolSize(16);
+    return executor;
+}
+</code></pre>
+
+    <h3>5.8 New properties configuration</h3>
+    To support parallel database access, we increased the connection pool size in the YAML configuration:
+
+<pre><code class="language-yaml">
+spring:
+datasource:
+    url: "jdbc:postgresql://localhost:5432/postgres"
+    username: "postgres"
+    password: "postgres"
+    hikari:
+        maximum-pool-size: 30
+</code></pre>
+    This ensures that enough connections are available for concurrent processing.
+
+    <h3>5.9 Execution results</h3>
+    With partitioning enabled and the thread pool configured, the job execution time dropped significantly.
+    <br>
+    Total execution time: 9 minutes and 5 seconds, which is 29% of the initial benchmark time.
+    </div>
+
+    <div id="navigation-bar">
+        <a href="#" onclick="goPrev();" id="navigate-left">&lt;&lt; Previous</a>
+        <a href="#" onclick="goNext();" id="navigate-right">Next &gt;&gt;</a>
+    </div>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+    <script>hljs.highlightAll();</script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</body>
+</html>

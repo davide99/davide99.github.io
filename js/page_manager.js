@@ -27,6 +27,9 @@ function _updateUrlWithPage(index) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    pages = document.querySelectorAll('.page');
+    totalPages = pages.length;
+
     const params = new URLSearchParams(window.location.search);
     let page = parseInt(params.get('page'), 10);
 
@@ -34,7 +37,5 @@ window.addEventListener('DOMContentLoaded', () => {
         page = 0;
     }
 
-    pages = document.querySelectorAll('.page');
-    totalPages = pages.length;
     showPage(page);
 });
