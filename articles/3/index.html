@@ -41,21 +41,21 @@
 
     <div id="page0" class="page">
         <h2>1. Maven configuration</h2>
-        We'll using a couple dependencies:
+        To get started, make sure your <code>pom.xml</code> includes the necessary dependencies:
         <ul>
-            <li>Spring Boot starter Batch</li>
-            <li>Spring Boot starter Data JPA</li>
-            <li>Postgres driver</li>
-            <li>Lombok (optional)</li>
-            <li>Spring Boot starter Validation (optional)</li>
+            <li><b>Spring Boot starter Batch</b></li>
+            <li><b>Spring Boot starter Data JPA</b></li>
+            <li><b>Postgres driver</b></li>
+            <li><b>Lombok</b> (optional, for boilerplate reduction)</li>
+            <li><b>Spring Boot starter Validation</b> (optional, for input validation)</li>
         </ul>
             
-        The full <code>pom.xml</code> is available in the <a href="#">repository</a>.
+        You can find the complete <code>pom.xml</code> in the project <a href="#">repository</a>.
     </div>
 
     <div id="page1" class="page">
         <h2>2. Spring Boot configuration</h2>
-        When configuring the Spring Boot application, we need to configure the database connection as follows:
+        Configure your <code>application.yml</code> (or <code>application.properties</code>) with the following settings:
 <pre><code class="language-yaml">
 spring:
     application:
@@ -73,9 +73,10 @@ spring:
 </code></pre>
         Here's what we're telling Spring Boot:
         <ul>
-            <li>The name of our application</li>
-            <li>To initialize Spring Batch tables (used to store job and step execution metadata)</li>
-            <li>To align the database schema schema with our JPA entity definitions</li>
+            <li><code>spring.application.name</code>: the name of our application</li>
+            <li><code>spring.batch.jdbc.initialize-schema: always</code>: to initialize Spring Batch tables (used to store job and step execution metadata)</li>
+            <li><code>spring.datasource.*</code>: configures the database connection</li>
+            <li><code>spring.jpa.hibernate.ddl-auto: update</code>: to align the database schema schema with our JPA entity definitions</li>
         </ul>
 
         <br>
