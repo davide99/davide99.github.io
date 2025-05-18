@@ -18,7 +18,7 @@
             "https://davidesnotes.com/articles/1/img/SEO/16x9.webp"
            ],
           "datePublished": "2025-05-11T12:45:00+02:00",
-          "dateModified": "2025-05-11T12:45:00+02:00",
+          "dateModified": "2025-05-18T17:51:00+02:00",
           "author": [{
               "@type": "Person",
               "name": "Davide Pisanò",
@@ -50,7 +50,7 @@
             <li><b>Spring Boot starter Validation</b> (optional, for input validation)</li>
         </ul>
             
-        You can find the complete <code>pom.xml</code> in the project <a href="#">repository</a>.
+        You can find the complete <code>pom.xml</code> in the project <a href="https://github.com/davide99/PartitionerTest">repository</a>.
     </div>
 
     <div id="page1" class="page">
@@ -387,6 +387,22 @@ datasource:
     <br>
     Total execution time: 9 minutes and 5 seconds, which is 29% of the initial benchmark time.
     </div>
+
+    <div id="page5" class="page">
+        <h2>6. Conclusions</h2>
+        <ul>
+            <li><strong>Major speed-up</strong>: execution time dropped from 31m 15s to 9m 5s (~71% faster)</li>
+            <li><strong>Scalability</strong>: splitting by ticker allows easy horizontal scaling by increasing thread pool size</li>
+            <li><strong>Reliability</strong>: each partition runs in isolation, reducing timeout or lock contention risks</li>
+            <li><strong>Configurability</strong>: tune parameters like core/max pool size and connection pool to optimize the workload</li>
+        </ul>
+        <br>
+        <p>With this approach, Spring Batch becomes a high-performance, modular solution even for very large datasets.</p>
+        <br>
+        <p>The project repository can be found <a href="https://github.com/davide99/PartitionerTest">here</a>.</p>
+        
+    </div>
+
 
     <div id="navigation-bar">
         <a href="#" onclick="goPrev();" id="navigate-left">&lt;&lt; Previous</a>
