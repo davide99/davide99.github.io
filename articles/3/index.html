@@ -88,7 +88,7 @@ spring:
         To properly test the performance of our batch job, we need a dataset with a significant amount of data. After a brief search on Kaggle, I came across the 
         <a href="https://www.kaggle.com/datasets/paultimothymooney/stock-market-data">Stock Market Data (NASDAQ, NYSE, S&P500)</a>, which perfectly fits our needs. 
         Big thanks to the author for making it publicly available.
-        <br>
+        <br><br>
         The dataset consists of multiple CSV files, each representing historical price data for a specific stock. Each file is named after its stock ticker. 
         For every ticker (i.e., each CSV), we have:
         <ul>
@@ -160,7 +160,7 @@ public class StockEntity {
         <br>
         Given the table contains <strong>3,258,423</strong> rows, this operation involves a significant load — perfect for performance testing.
 
-        <h3>4.1: Create a reader</h3>
+        <h3>4.1. Create a reader</h3>
         We define a <code>JpaPagingItemReader</code> that selects only the necessary fields, projecting them into a DTO:
 
 <pre><code class="language-java">
@@ -194,7 +194,7 @@ public class StockMeanDTO {
 }
 </code></pre>
 
-        <h3>4.2: Add the <code>mean</code> field to the entity</h3>
+        <h3>4.2. Add the <code>mean</code> field to the entity</h3>
         We extend the entity to store the computed mean value:
 
 <pre><code class="language-java">
@@ -203,7 +203,7 @@ public class StockMeanDTO {
 private BigDecimal mean = BigDecimal.ZERO;
 </code></pre>
 
-        <h3>4.3: Add a repository method for updates</h3>
+        <h3>4.3. Add a repository method for updates</h3>
 
         We create a custom method to update the mean field based on the ID:
 
@@ -215,7 +215,7 @@ public interface StockRepository extends JpaRepository&lt;StockEntity, Long&gt; 
 }
 </code></pre>
 
-        <h3>4.4: Define the writer</h3>
+        <h3>4.4. Define the writer</h3>
 
         Finally, we implement the writer that persists the computed values:
 
@@ -234,7 +234,7 @@ public ItemWriter&lt;StockMeanDTO&gt; itemWriter(StockRepository repository) {
             <li>A <code>writer</code> that performs an update for each record</li>
         </ul>
 
-        <h3>4.5: Results</h3>
+        <h3>4.5. Results</h3>
         With the full pipeline in place, I ran the batch job on the full dataset of 3,258,423 rows.
         <br>
         The execution took exactly <strong>31 minutes and 15 seconds</strong> to complete.
@@ -246,7 +246,7 @@ public ItemWriter&lt;StockMeanDTO&gt; itemWriter(StockRepository repository) {
         <h2>5. Parallelizing the task with a Partitioner</h2>
         To improve performance, we can parallelize the batch processing using a <strong>Partitioner</strong>. This mechanism splits the workload into multiple independent chunks, each handled by a separate thread.
 
-        <h3>5.1 Master/Slave Step</h3>
+        <h3>5.1. Master/Slave Step</h3>
         The Spring Batch <strong>master step</strong> is responsible for creating partitions using the partitioner and assigning them to worker steps (the <strong>slave step</strong>), which execute the actual logic.
         
         You can visualize it like this:  
@@ -254,7 +254,7 @@ public ItemWriter&lt;StockMeanDTO&gt; itemWriter(StockRepository repository) {
         
         We also need a <code>TaskExecutor</code>, which will run multiple slave steps in parallel. Each slave will process a subset of data defined by a key — in our case, the <code>ticker</code>.
 
-        <h3>5.2 Partition key selection</h3>
+        <h3>5.2. Partition key selection</h3>
         We need a way to split the data. The <code>ticker</code> is a perfect candidate, as it's already part of our data and defines a natural subset.
         <br>
         Add this method to the repository:
@@ -264,7 +264,7 @@ public ItemWriter&lt;StockMeanDTO&gt; itemWriter(StockRepository repository) {
 Set&lt;String&gt; findAllTickers();
 </code></pre>
 
-        <h3>5.3 Defining the Partitioner</h3>
+        <h3>5.3. Defining the Partitioner</h3>
         We implement a custom <code>Partitioner</code> which adds the ticker value to the <code>ExecutionContext</code> of each partition:
 
 <pre><code class="language-java">
@@ -291,7 +291,7 @@ public class TickerPartitioner implements Partitioner {
 
     <b>Note</b>: We're ignoring the <code>parameter</code>. If there are n tickers, we create n partitions. The actual parallelism is controlled by the thread pool (<code>TaskExecutor</code>) which can run up to m < n tasks concurrently.
 
-    <h3>5.4 Master step</h3>
+    <h3>5.4. Master step</h3>
     The master step uses our partitioner and delegates to the slave step:
 
 <pre><code class="language-java">
@@ -313,7 +313,7 @@ public Step masterStep(
 
     <b>Note</b>: We're ignoring the <code>parameter</code>. If there are n tickers, we create n partitions. The actual parallelism is controlled by the thread pool (<code>TaskExecutor</code>) which can run up to m < n tasks concurrently.
 
-    <h3>5.5 Slave step</h3>
+    <h3>5.5. Slave step</h3>
     The slave step is identical to the original non-partitioned step:
 
 <pre><code class="language-java">
@@ -332,7 +332,7 @@ public Step slaveStep(
 }
 </code></pre>
 
-    <h3>5.6 Reader adjusted to use the ticker</h3>
+    <h3>5.6. Reader adjusted to use the ticker</h3>
     The reader is updated to filter by ticker using the value injected in the context by the partitioner:
 
 <pre><code class="language-java">
@@ -355,7 +355,7 @@ public JpaPagingItemReader<StockMeanDTO> itemReader(
 }
 </code></pre>
 
-    <h3>5.7 Task executor configuration</h3>
+    <h3>5.7. Task executor configuration</h3>
     We define a thread pool to handle parallel execution:
 
 <pre><code class="language-java">
@@ -368,7 +368,7 @@ public TaskExecutor taskExecutor() {
 }
 </code></pre>
 
-    <h3>5.8 New properties configuration</h3>
+    <h3>5.8. New properties configuration</h3>
     To support parallel database access, we increased the connection pool size in the YAML configuration:
 
 <pre><code class="language-yaml">
@@ -382,7 +382,7 @@ datasource:
 </code></pre>
     This ensures that enough connections are available for concurrent processing.
 
-    <h3>5.9 Execution results</h3>
+    <h3>5.9. Execution results</h3>
     With partitioning enabled and the thread pool configured, the job execution time dropped significantly.
     <br>
     Total execution time: 9 minutes and 5 seconds, which is 29% of the initial benchmark time.
