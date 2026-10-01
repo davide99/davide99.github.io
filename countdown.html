@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="author" content="Davide Pisanò">
+
+    <title>Countdown</title>
+
+    <style>
+        .countdown-page {
+            text-align: center;
+            margin-top: 5em;
+        }
+
+        .countdown {
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            gap: 0;
+            margin: 3em 0 2em;
+        }
+
+        .countdown-item {
+            padding: 0 2em;
+            border-right: 1px solid #aaa;
+        }
+
+        .countdown-item:first-child {
+            padding-left: 0;
+        }
+
+        .countdown-item:last-child {
+            padding-right: 0;
+            border-right: none;
+        }
+
+        .countdown-value {
+            font-family: 'Arimo', sans-serif;
+            font-size: 4em;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .countdown-label {
+            display: block;
+            margin-top: 0.6em;
+            font-family: 'Arimo', sans-serif;
+            font-size: 0.75em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .countdown-date {
+            color: #666;
+            font-size: 0.9em;
+            font-family: 'Arimo', sans-serif;
+        }
+
+        @media (max-width: 500px) {
+            .countdown-page {
+                margin-top: 3em;
+            }
+
+            .countdown-page h1 {
+                font-size: 1.5em;
+            }
+
+            .countdown {
+                margin-top: 2em;
+            }
+
+            .countdown-item {
+                padding: 0 0.8em;
+            }
+
+            .countdown-value {
+                font-size: 2.5em;
+            }
+
+            .countdown-label {
+                font-size: 0.65em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="countdown-page">
+        <div class="countdown">
+            <div class="countdown-item">
+                <span class="countdown-value" id="days">--</span>
+                <span class="countdown-label">giorni lavorativi</span>
+            </div>
+
+            <div class="countdown-item">
+                <span class="countdown-value" id="hours">--</span>
+                <span class="countdown-label">ore</span>
+            </div>
+
+            <div class="countdown-item">
+                <span class="countdown-value" id="minutes">--</span>
+                <span class="countdown-label">minuti</span>
+            </div>
+        </div>
+
+        <div class="countdown-date">
+            30 ottobre 2026 · 18:00
+        </div>
+    </main>
+
+    <script>
+        const END = new Date("2026-10-30T18:00:00");
+
+        function isWorkingDay(date) {
+            const day = date.getDay();
+            return day >= 1 && day <= 5;
+        }
+
+        function updateCountdown() {
+            const now = new Date();
+
+            if (now >= END) {
+                document.getElementById("days").textContent = "0";
+                document.getElementById("hours").textContent = "00";
+                document.getElementById("minutes").textContent = "00";
+                return;
+            }
+
+            // Ore/minuti fino alle prossime 18:00 (orario "da orologio")
+            const endSec = END.getHours() * 3600 + END.getMinutes() * 60;
+            const nowSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+            let diffSec = endSec - nowSec;
+            if (diffSec <= 0) diffSec += 86400;
+
+            const hours = Math.floor(diffSec / 3600);
+            const minutes = Math.floor((diffSec % 3600) / 60);
+
+            // Giorni lavorativi DOPO il giorno di quelle 18:00, fino al 30/10 incluso
+            const anchor = new Date(now);
+            if (nowSec >= endSec) anchor.setDate(anchor.getDate() + 1);
+
+            const current = new Date(anchor);
+            current.setHours(0, 0, 0, 0);
+            current.setDate(current.getDate() + 1);
+
+            const endDate = new Date(END);
+            endDate.setHours(0, 0, 0, 0);
+
+            let workingDays = 0;
+            while (current <= endDate) {
+                if (isWorkingDay(current)) workingDays++;
+                current.setDate(current.getDate() + 1);
+            }
+
+            document.getElementById("days").textContent = workingDays;
+            document.getElementById("hours").textContent = String(hours).padStart(2, "0");
+            document.getElementById("minutes").textContent = String(minutes).padStart(2, "0");
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    </script>
+
+</body>
+</html>
