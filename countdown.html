@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="Davide Pisanò">
 
     <title>Countdown</title>
@@ -84,6 +84,28 @@
                 font-size: 0.65em;
             }
         }
+
+        /* --- Scherzo --- */
+        #prank {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 180px;
+            height: auto;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s;
+            will-change: transform;
+            transform-origin: 50% 8%; /* la punta */
+            color: #222;
+        }
+
+        @media (max-width: 500px) {
+            #prank {
+                width: 130px;
+            }
+        }
     </style>
 </head>
 
@@ -110,6 +132,20 @@
             30 ottobre 2026 · 18:00
         </div>
     </main>
+
+    <!-- Scherzo: solo contorni, nessun riempimento -->
+    <svg id="prank" viewBox="0 0 100 156" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+        <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <!-- contorno unico: asta + testa + testicoli -->
+            <path d="M40 107.5 L40 36 C40 6 60 6 60 36 L60 107.5
+                     A22 22 0 1 1 50 140.65
+                     A22 22 0 1 1 40 107.5 Z"/>
+            <!-- bordo della testa -->
+            <path d="M40 36 Q50 44 60 36"/>
+        </g>
+        <text x="50" y="134" text-anchor="middle" font-family="Arial, sans-serif"
+              font-size="13" font-weight="bold" letter-spacing="1" fill="currentColor">BCC</text>
+    </svg>
 
     <script>
         const END = new Date("2026-10-30T18:00:00");
@@ -162,7 +198,77 @@
 
         updateCountdown();
         setInterval(updateCountdown, 1000);
+
+        // --- Scherzo ---
+        (function () {
+            const el = document.getElementById("prank");
+            const isTouch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+            const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+            const TIP = 0.08; // altezza della punta (frazione dell'altezza totale)
+            // gli <svg> non hanno offsetWidth/offsetHeight: calcolo le dimensioni dallo stile
+            const size = () => {
+                const w = parseFloat(getComputedStyle(el).width) || 180;
+                return { w: w, h: w * 156 / 100 };
+            };
+
+            let x = window.innerWidth / 2;
+            let y = window.innerHeight / 2;
+            let angle = 0;
+
+            function draw() {
+                const sz = size(), w = sz.w, h = sz.h;
+                el.style.transform =
+                    "translate3d(" + (x - w / 2) + "px," + (y - h * TIP) + "px,0) rotate(" + angle + "deg)";
+            }
+
+            if (!isTouch) {
+                // Desktop: segue il mouse con un po' di inerzia
+                let tx = x, ty = y;
+
+                window.addEventListener("mousemove", function (e) {
+                    tx = e.clientX;
+                    ty = e.clientY;
+                    el.style.opacity = "1";
+                });
+                document.addEventListener("mouseleave", function () {
+                    el.style.opacity = "0";
+                });
+
+                (function loop() {
+                    const vx = tx - x;
+                    x += vx * 0.12;
+                    y += (ty - y) * 0.12;
+                    angle += (clamp(vx * 0.4, -35, 35) - angle) * 0.15;
+                    draw();
+                    requestAnimationFrame(loop);
+                })();
+            } else {
+                // Mobile: va in giro da solo e rimbalza sui bordi
+                let vx = 2.2, vy = 1.7;
+                let last = performance.now();
+                el.style.opacity = "1";
+
+                (function loop(t) {
+                    const k = Math.min((t - last) / 16.67, 3);
+                    last = t;
+
+                    const sz = size(), hw = sz.w / 2;
+                    x += vx * k;
+                    y += vy * k;
+
+                    if (x < hw) { x = hw; vx = Math.abs(vx); }
+                    if (x > window.innerWidth - hw) { x = window.innerWidth - hw; vx = -Math.abs(vx); }
+                    if (y < 0) { y = 0; vy = Math.abs(vy); }
+                    if (y > window.innerHeight - sz.h * (1 - TIP)) { y = window.innerHeight - sz.h * (1 - TIP); vy = -Math.abs(vy); }
+
+                    angle = Math.sin(t / 500) * 25;
+                    draw();
+                    requestAnimationFrame(loop);
+                })(performance.now());
+            }
+        })();
     </script>
 
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"7b4c725c5e554e878091a017844a2e7e","r":1,"spa":2}' crossorigin="anonymous"></script>
 </body>
 </html>
