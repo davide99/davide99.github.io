@@ -199,69 +199,107 @@
         updateCountdown();
         setInterval(updateCountdown, 1000);
 
-        // --- Scherzo ---
+        // --- Scherzo: pendolo appeso al cursore ---
         (function () {
             const el = document.getElementById("prank");
             const isTouch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
             const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
             const TIP = 0.08; // altezza della punta (frazione dell'altezza totale)
+
+            // Parametri della fisica (ritoccabili)
+            const G = 2500;     // "gravità" in px/s²: più alta = oscilla più veloce
+            const DAMP = 2.2;   // attrito: più alto = si ferma prima
+            const KICK = 0.4;   // quanto il movimento del cursore lo fa dondolare
+            const AMAX = 12000; // limite all'accelerazione del cursore
+
             // gli <svg> non hanno offsetWidth/offsetHeight: calcolo le dimensioni dallo stile
             const size = () => {
                 const w = parseFloat(getComputedStyle(el).width) || 180;
                 return { w: w, h: w * 156 / 100 };
             };
 
-            let x = window.innerWidth / 2;
+            let x = window.innerWidth / 2;   // posizione della punta (il perno)
             let y = window.innerHeight / 2;
-            let angle = 0;
+            let th = 0, om = 0;              // angolo (rad) e velocità angolare
+            let px = x, py = y, pvx = 0, pvy = 0;
 
             function draw() {
-                const sz = size(), w = sz.w, h = sz.h;
+                const sz = size();
                 el.style.transform =
-                    "translate3d(" + (x - w / 2) + "px," + (y - h * TIP) + "px,0) rotate(" + angle + "deg)";
+                    "translate3d(" + (x - sz.w / 2) + "px," + (y - sz.h * TIP) + "px,0) rotate(" +
+                    (th * 180 / Math.PI) + "deg)";
             }
 
+            // Pendolo con perno mobile: appeso per la punta, il corpo penzola e oscilla
+            function physics(dt) {
+                const vx = (x - px) / dt, vy = (y - py) / dt;
+                let ax = (vx - pvx) / dt, ay = (vy - pvy) / dt;
+                px = x; py = y; pvx = vx; pvy = vy;
+                ax = clamp(ax, -AMAX, AMAX) * KICK;
+                ay = clamp(ay, -AMAX, AMAX) * KICK;
+
+                const L = size().h * 0.55;   // distanza punta -> baricentro
+                const n = 4, h = dt / n;
+                for (let i = 0; i < n; i++) {
+                    const acc = (ax * Math.cos(th) - (G - ay) * Math.sin(th)) / L - DAMP * om;
+                    om = clamp(om + acc * h, -30, 30);
+                    th += om * h;
+                }
+            }
+
+            let last = performance.now();
+            const getDt = (now) => {
+                const dt = clamp((now - last) / 1000, 0.001, 0.033);
+                last = now;
+                return dt;
+            };
+
             if (!isTouch) {
-                // Desktop: segue il mouse con un po' di inerzia
-                let tx = x, ty = y;
+                // Desktop: la punta sta sul cursore, il corpo penzola e oscilla
+                let tx = x, ty = y, seen = false;
 
                 window.addEventListener("mousemove", function (e) {
                     tx = e.clientX;
                     ty = e.clientY;
+                    if (!seen) { x = tx; y = ty; px = x; py = y; seen = true; }
                     el.style.opacity = "1";
                 });
                 document.addEventListener("mouseleave", function () {
                     el.style.opacity = "0";
                 });
 
-                (function loop() {
-                    const vx = tx - x;
-                    x += vx * 0.12;
-                    y += (ty - y) * 0.12;
-                    angle += (clamp(vx * 0.4, -35, 35) - angle) * 0.15;
+                (function loop(now) {
+                    const dt = getDt(now);
+                    const f = 1 - Math.exp(-dt * 20);   // piccolo smorzamento del perno
+                    x += (tx - x) * f;
+                    y += (ty - y) * f;
+                    physics(dt);
                     draw();
                     requestAnimationFrame(loop);
-                })();
+                })(performance.now());
             } else {
-                // Mobile: va in giro da solo e rimbalza sui bordi
-                let vx = 2.2, vy = 1.7;
-                let last = performance.now();
+                // Mobile: il perno si muove da solo su traiettorie curve e rimbalza sui bordi
+                let vx = 150, vy = 115;   // px/s
+                const turn = 0.5;         // rad/s: quanto curva la traiettoria
                 el.style.opacity = "1";
 
-                (function loop(t) {
-                    const k = Math.min((t - last) / 16.67, 3);
-                    last = t;
+                (function loop(now) {
+                    const dt = getDt(now);
+
+                    const c = Math.cos(turn * dt), s = Math.sin(turn * dt);
+                    const nvx = vx * c - vy * s, nvy = vx * s + vy * c;
+                    vx = nvx; vy = nvy;
+                    x += vx * dt;
+                    y += vy * dt;
 
                     const sz = size(), hw = sz.w / 2;
-                    x += vx * k;
-                    y += vy * k;
-
                     if (x < hw) { x = hw; vx = Math.abs(vx); }
                     if (x > window.innerWidth - hw) { x = window.innerWidth - hw; vx = -Math.abs(vx); }
                     if (y < 0) { y = 0; vy = Math.abs(vy); }
-                    if (y > window.innerHeight - sz.h * (1 - TIP)) { y = window.innerHeight - sz.h * (1 - TIP); vy = -Math.abs(vy); }
+                    const ymax = window.innerHeight - sz.h * (1 - TIP);
+                    if (y > ymax) { y = ymax; vy = -Math.abs(vy); }
 
-                    angle = Math.sin(t / 500) * 25;
+                    physics(dt);
                     draw();
                     requestAnimationFrame(loop);
                 })(performance.now());
