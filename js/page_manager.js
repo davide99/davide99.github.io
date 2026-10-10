@@ -7,7 +7,8 @@ function showPage(index) {
         p.style.display = (i === index) ? 'block' : 'none';
     });
     currentPage = index;
-    _updateUrlWithPage(index)
+    _updateNotes(index);
+    _updateUrlWithPage(index);
 }
 
 function goNext() {
@@ -18,6 +19,21 @@ function goNext() {
 function goPrev() {
     currentPage = (currentPage - 1 + totalPages) % totalPages;
     showPage(currentPage);
+}
+
+function _updateNotes(index) {
+    const section = document.getElementById('notes');
+    if (!section) return;
+
+    let visible = 0;
+    section.querySelectorAll('.footnote').forEach(n => {
+        const m = /^fn-(\d+)-/.exec(n.id);          // "fn-0-1" -> 0
+        const show = m !== null && parseInt(m[1], 10) === index;
+        n.style.display = show ? 'block' : 'none';
+        if (show) visible++;
+    })
+
+    section.style.display = visible > 0 ? 'block' : 'none';
 }
 
 function _updateUrlWithPage(index) {
@@ -33,7 +49,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     let page = parseInt(params.get('page'), 10);
 
-    if (isNaN(page) || page < 0 || page > totalPages) {
+    if (isNaN(page) || page < 0 || page >= totalPages) {
         page = 0;
     }
 

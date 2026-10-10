@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>FSK in a nutshell: tones and phase considerations</title>
+    <meta charset="UTF-8">
+    <link rel="canonical" href="https://davidesnotes.com/articles/4/">
+    <meta name="description" content="FSK in a nutshell: tones and phase considerations">
+    <meta name="keywords" content="fsk, signal processing, simulation, phase, tone, frequency, transmitter">
+    <meta name="author" content="Davide Pisanò">
+
+    <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": "FSK in a nutshell: tones and phase considerations",
+          "image": [
+            "https://davidesnotes.com/articles/1/img/SEO/1x1.webp",
+            "https://davidesnotes.com/articles/1/img/SEO/4x3.webp",
+            "https://davidesnotes.com/articles/1/img/SEO/16x9.webp"
+           ],
+          "datePublished": "2025-05-11T12:45:00+02:00",
+          "dateModified": "2025-05-18T17:51:00+02:00",
+          "author": [{
+              "@type": "Person",
+              "name": "Davide Pisanò",
+              "url": "https://davidesnotes.com"
+            }]
+        }
+    </script>
+
+    <link rel="stylesheet" href="../../style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0">
+    <script src="../../js/page_manager.js"></script>
+</head>
+
+<body>
+    <h1>FSK in a nutshell: tones and phase considerations</h1>
+
+    In this article, we'll take a quick look at <b>FSK</b>, one of the most common digital modulation techniques.
+    We'll start with the core idea, dive into the math and bridge the gap between textbook theory and real-world
+    implementation.
+
+    <div id="page0" class="page">
+        <h2>1. FSK definition</h2>
+        <p>
+            Let's start with the acronym: FSK stands for <i>Frequency-Shift Keying</i>.
+            <br>
+            It's a digital modulation technique where information is encoded by shifting the frequency of a signal
+            in discrete steps.
+        </p>
+        
+        <p>
+            Let's kick things off with the simplest case: <i>Binary FSK</i> (or BFSK or 2FSK), where the carrier is 
+            shifted between two discrete frequencies to transmit binary data (\(0\)s and \(1\)s).
+            <br>
+            Say we choose two frequencies, \(f_0\) and \(f_1\) and we want to transmit the following bit string: \(0101\).
+            <br>
+            In the real domain, the first and the second signals will be described by:
+            \[x_0(t) = \cos(2\pi f_0 t), x_1(t) = \cos(2\pi f_1 t)\]
+            Assuming we choose signal \(x_0\) to transmit a zero and \(x_1\) to transmit a one, we'll get a signal looking like:
+            <figure>
+                <img src="imgs/bfsk_0101_generic.svg" alt="BFSK waveform for the bit string 0101" style="max-width:100%">
+                <figcaption>BFSK waveform for the bit string 0101: tone \(f_0\) for a zero, tone \(f_1\) for a one.</figcaption>
+            </figure>
+
+            In theory, the spectrum of this signal looks something like this<sup id="fnref-0-1"><a href="#fn-0-1">1</a></sup>:
+            <figure>
+                <img src="imgs/spectrum_ideal.svg" alt="Idealized BFSK spectrum: two lines at f0 and f1" style="max-width:100%">
+                <figcaption>Idealized BFSK spectrum: all the power sits at \(f_0\) and \(f_1\).</figcaption>
+            </figure>
+
+            This makes FSK quite handy to demodulate numerically: all you need is a short-time FFT, monitoring the
+            intensity at \(f_0\) and \(f_1\) over time. Whichever of the two is stronger tells you whether a \(0\) or a
+            \(1\) was sent.
+        </p>
+
+        <p>
+            Notice, however, the jumps at some bit boundaries in the waveform above. This is far from ideal: an abrupt
+            change in the signal is, mathematically, a very sudden event, and sudden events need a lot of frequency content
+            to be described. The result is <i>spectral splatter</i> (often loosely called <i>spectral leakage</i>):
+            instead of the clean spectrum we saw earlier, we get something like this:
+
+            <figure>
+                <img src="imgs/spectrum_leakage.svg" alt="Spectrum of the FSK signal with jumps: broad skirts around f0 and f1" style="max-width:100%">
+                <figcaption>Spectrum of a random bit sequence with jumps at the bit boundaries (dB scale).
+                Note the long skirts that extend far from \(f_0\) and \(f_1\).</figcaption>
+            </figure>
+        </p>
+
+        <h3>Why is this a problem?</h3>
+        <p>
+            There are two main reasons.
+            <ul>
+                <li>
+                    <b>Wasted bandwidth</b>: The signal occupies much more spectrum than the two tones alone would require.
+                    If we transmit it, the energy spilling outside the intended band interferes with neighbouring channels and
+                    regulations typically limit how much power a transmitter may emit out of band.
+                </li>
+                <li>
+                    <b>Harder detection</b>: The energy that splatters around \(f_0\) and \(f_1\) ends up in the very frequencies
+                    we are monitoring, which reduces the margin between "tone present" and "tone absent".
+                </li>
+            </ul>
+
+            Can we get rid of the jumps? Yes, by making sure the phase of the signal never jumps when the frequency
+            changes. That is the subject of the next section.
+        </p>
+    </div>
+
+
+
+    <div id="navigation-bar">
+        <div id="notes">
+            <p id="fn-0-1" class="footnote">
+            <small>
+                <sup>1</sup> In practice each tone only lasts for a finite time, so each line widens into a narrow peak.
+                For now, the idealized picture is good enough. <a href="#fnref-0-1">↩</a>
+            </small>
+            </p>
+        </div>
+        
+        <a href="#" onclick="goPrev();" id="navigate-left">&lt;&lt; Previous</a>
+        <a href="#" onclick="goNext();" id="navigate-right">Next &gt;&gt;</a>
+    </div>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+    <script>hljs.highlightAll();</script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</body>
+</html>
