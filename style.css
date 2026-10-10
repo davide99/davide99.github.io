@@ -155,3 +155,7 @@ figure figcaption {
     font-size: small;
 }
   
+.footnote { 
+    margin-top: 0.3em;
+    line-height: 1.3; 
+}

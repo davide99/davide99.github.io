@@ -87,7 +87,7 @@
             </figure>
         </p>
 
-        <h3>Why is this a problem?</h3>
+        <h3>1.1 Why is this a problem?</h3>
         <p>
             There are two main reasons.
             <ul>
@@ -107,6 +107,129 @@
         </p>
     </div>
 
+    <div id="page1" class="page">
+        <h2>2. Continuous phase</h2>
+
+        <h3>2.1 A cosine as a point on a circle</h3>
+        <p>
+            Where do those jumps come from? To answer, we need to look at a cosine in a different way.
+            A complex number \(z = a + jb\), with \(j^2 = -1\),<sup id="fnref-1-1"><a href="#fn-1-1">1</a></sup>
+            can be drawn as a point in a plane: \(a\) on the <i>real axis</i>, \(b\) on the <i>imaginary axis</i>.
+            A point on the circle of radius 1, at angle \(\varphi\) from the real axis, is described by Euler's formula:
+            \[e^{j\varphi} = \cos\varphi + j\sin\varphi\]
+        </p>
+        <figure>
+            <img src="imgs/complex_plane_phase.svg" alt="Unit circle with the angle phi and its projections cos(phi) and sin(phi)" style="max-width:100%">
+            <figcaption>The point \(e^{j\varphi}\) on the unit circle: its projection on the real axis is \(\cos\varphi\), the one on the imaginary axis is \(\sin\varphi\).</figcaption>
+        </figure>
+        <p>
+            This gives us a link with the real signals we wrote earlier: a cosine is simply the real part of that point,
+            \[\cos\varphi = \mathrm{Re}\{e^{j\varphi}\}\]
+            so \(x_0(t) = \cos(2\pi f_0 t)\) is the shadow, on the real axis, of a point that keeps going around the circle.
+            The angle \(\varphi\) is what we call the <i>phase</i>. For our tones, \(\varphi(t) = 2\pi f_0 t\) or
+            \(2\pi f_1 t\).
+        </p>
+
+        <h3>2.2 Angular velocity and frequency</h3>
+        <p>
+            If the point goes around the circle, we can ask how fast it does so. The rate at which the angle grows is
+            the <i>angular velocity</i>:
+            \[\omega(t) = \frac{d\varphi}{dt} \qquad [\text{rad/s}]\]
+            One full turn is \(2\pi\) radians, so the number of turns per second, that is the frequency, is:
+            \[f(t) = \frac{1}{2\pi}\frac{d\varphi}{dt}\]
+        </p>
+        <p>
+            The nice thing about this definition is that it works even when the frequency changes over time and that is
+            what FSK does. It also tells us what we should require from \(\varphi(t)\): <i>its derivative must be the
+            frequency we want</i>.
+        </p>
+
+        <h3>2.3 Phase as the integral of frequency</h3>
+        <p>
+            Let's go back to the definition of frequency and rearrange it, so that the phase is on one side:
+            \[f(t) = \frac{1}{2\pi}\frac{d\varphi}{dt} \quad\Longrightarrow\quad \frac{d\varphi}{dt} = 2\pi f(t)\]
+            Now integrate both sides between \(0\) and \(t\) (calling the integration variable \(\tau\)):
+            \[\int_0^t \frac{d\varphi}{d\tau}\,d\tau = 2\pi \int_0^t f(\tau)\,d\tau\]
+            On the left, the integral of a derivative gives back the function evaluated at the endpoints,
+            \(\varphi(t) - \varphi(0)\). Hence:
+            \[\varphi(t) - \varphi(0) = 2\pi \int_0^t f(\tau)\,d\tau\ \Longrightarrow \varphi(t) = \varphi(0) + 2\pi \int_0^t f(\tau)\,d\tau\]
+            The phase at time \(t\) is the initial phase plus the area under \(f\) (multiplied by \(2\pi\)). Since the area
+            under a function changes only a little over a short interval, even when \(f\) itself switches abruptly from
+            \(f_0\) to \(f_1\) the phase can't jump: it just starts growing at a different rate. The same bit string now
+            gives:
+        </p>
+        <figure>
+            <img src="imgs/bfsk_0101_continuous.svg" alt="Phase-continuous BFSK waveform for the bit string 0101" style="max-width:100%">
+            <figcaption>The same bit string, with continuous phase: no jumps at the bit boundaries.</figcaption>
+        </figure>
+        <p>
+            The frequency still changes abruptly, but the signal is now smooth across the switch, and the spectrum
+            reflects it: the skirts around the tones fall off considerably faster.
+        </p>
+        <figure>
+            <img src="imgs/spectrum_jumps_vs_continuous.svg" alt="Spectrum with jumps vs continuous phase" style="max-width:100%">
+            <figcaption>Spectrum of a random bit sequence, with and without jumps (dB scale, illustrative tone spacing).</figcaption>
+        </figure>
+
+        <h3>2.4 From the integral to a sum</h3>
+        <p>
+            A computer doesn't know about continuous time: it only works with samples taken every \(T_s\) seconds
+            (the sampling frequency is \(f_s = 1/T_s\)). We therefore evaluate the frequency only at
+            \(T_s, 2T_s, 3T_s, \dots\) and call \(f[k] = f(kT_s)\) the value at the \(k\)-th sample.
+        </p>
+        <p>
+            The integral is the area under \(f(t)\). With samples spaced by \(T_s\), we can approximate it with a
+            <i>right Riemann sum</i>: the interval \([0, nT_s]\) is split into \(n\) slices of width \(T_s\), and each slice
+            is replaced by a rectangle whose height is the value of \(f\) at the slice's right endpoint, \(f[k] = f(kT_s)\):
+            \[\int_0^{nT_s} f(\tau)\,d\tau \approx \sum_{k=1}^{n} f[k]\,T_s\ = T_s\sum_{k=1}^{n} f[k]\]
+            and the phase at the \(n\)-th sample becomes
+            \[\varphi[n] = \varphi[0] + 2\pi T_s \sum_{k=1}^{n} f[k] = \varphi[0] + \frac{2\pi}{f_s}\sum_{k=1}^{n} f[k]\]
+        </p>
+        <figure>
+            <img src="imgs/frequency_sampling_phase.svg" alt="Sampled frequency switching from f0 to f1 and the accumulated phase" style="max-width:100%">
+            <figcaption>Top: the frequency switches from \(f_0\) to \(f_1\) and is evaluated at \(T_s, 2T_s, \dots\)
+            Each rectangle contributes \(f[k]T_s\) to the area. Bottom: the accumulated phase grows at every sample,
+            and when the frequency changes it only grows faster.</figcaption>
+        </figure>
+        <p>
+            The sum can be rewritten in a more convenient form. Let's expand it for the first two samples:
+            \[
+            \begin{aligned}
+            \varphi[1] &= \varphi[0] + \frac{2\pi}{f_s}\,f[1] \\[4pt]
+            \varphi[2] &= \varphi[0] + \frac{2\pi}{f_s}\,\big(f[1] + f[2]\big)
+            \end{aligned}
+            \]
+            Now notice that the first two terms of \(\varphi[2]\), \(\varphi[0]\) and the \(f[1]\) contribution, are
+            exactly \(\varphi[1]\). Grouping them:
+            \[
+            \varphi[2] = \underbrace{\varphi[0] + \frac{2\pi}{f_s}\,f[1]}_{\varphi[1]} + \frac{2\pi}{f_s}\,f[2]
+            = \varphi[1] + \frac{2\pi}{f_s}\,f[2]
+            \]
+            The same trick works for any \(n\): we split off the last term of the sum, and what remains is the phase at the
+            previous sample.
+            \[
+            \varphi[n] = \underbrace{\varphi[0] + \frac{2\pi}{f_s}\sum_{k=1}^{n-1} f[k]}_{\varphi[n-1]} + \frac{2\pi}{f_s}\,f[n]
+            \quad\Longrightarrow\quad
+            \varphi[n] = \varphi[n-1] + \frac{2\pi}{f_s}\,f[n]
+            \]
+            In words, each sample's phase is the previous one plus a small step and the step depends on the frequency at
+            that sample. This makes it obvious that there can be no jump: every sample starts exactly where the previous one
+            ended.
+        </p>
+
+        <p>
+            Remember that our signal is \(x(t) = \cos(\varphi(t))\). Sampling it at \(t = nT_s\) is now immediate, since
+            \(\varphi(nT_s)\) is exactly the \(\varphi[n]\) we just computed:
+            \[x[n] = x(nT_s) = \cos(\varphi[n])\]
+            This sequence of numbers is our continuous-phase FSK signal. All we need to generate it is the list of
+            frequencies \(f[n]\) (\(f_0\) or \(f_1\), depending on the bit) and a running sum.
+        </p>
+        <p>
+            So far we have treated \(f_0\) and \(f_1\) as arbitrary. But how far apart should the two tones be, so that a
+            receiver can reliably tell them apart? That is the topic of the next section.
+        </p>
+    </div>
+
 
 
     <div id="navigation-bar">
@@ -116,6 +239,12 @@
                 <sup>1</sup> In practice each tone only lasts for a finite time, so each line widens into a narrow peak.
                 For now, the idealized picture is good enough. <a href="#fnref-0-1">↩</a>
             </small>
+            </p>
+             <p id="fn-1-1" class="footnote">
+                <small>
+                    <sup>1</sup> Engineers write \(j\) instead of \(i\) for the imaginary unit, to avoid confusion with the
+                    current. <a href="#fnref-1-1">↩</a>
+                </small>
             </p>
         </div>
         
