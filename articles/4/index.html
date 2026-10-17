@@ -5,26 +5,21 @@
     <meta charset="UTF-8">
     <link rel="canonical" href="https://davidesnotes.com/articles/4/">
     <meta name="description" content="FSK in a nutshell: tones and phase considerations">
-    <meta name="keywords" content="fsk, signal processing, simulation, phase, tone, frequency, transmitter">
+    <meta name="keywords" content="fsk, frequency-shift keying, digital modulation, signal processing, phase, tone, frequency, orthogonality">
     <meta name="author" content="Davide Pisanò">
 
     <script type="application/ld+json">
         {
-          "@context": "https://schema.org",
-          "@type": "Article",
-          "headline": "FSK in a nutshell: tones and phase considerations",
-          "image": [
-            "https://davidesnotes.com/articles/1/img/SEO/1x1.webp",
-            "https://davidesnotes.com/articles/1/img/SEO/4x3.webp",
-            "https://davidesnotes.com/articles/1/img/SEO/16x9.webp"
-           ],
-          "datePublished": "2025-05-11T12:45:00+02:00",
-          "dateModified": "2025-05-18T17:51:00+02:00",
-          "author": [{
-              "@type": "Person",
-              "name": "Davide Pisanò",
-              "url": "https://davidesnotes.com"
-            }]
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "FSK in a nutshell: tones and phase considerations",
+        "datePublished": "2026-10-10T16:44:00+02:00",
+        "dateModified": "2026-10-17T11:40:00+02:00",
+        "author": [{
+            "@type": "Person",
+            "name": "Davide Pisanò",
+            "url": "https://davidesnotes.com"
+        }]
         }
     </script>
 
@@ -76,7 +71,7 @@
 
         <p>
             Notice, however, the jumps at some bit boundaries in the waveform above. This is far from ideal: an abrupt
-            change in the signal is, mathematically, a very sudden event, and sudden events need a lot of frequency content
+            change in the signal is, mathematically, a very sudden event and sudden events need a lot of frequency content
             to be described. The result is <i>spectral splatter</i> (often loosely called <i>spectral leakage</i>):
             instead of the clean spectrum we saw earlier, we get something like this:
 
@@ -163,7 +158,7 @@
             <figcaption>The same bit string, with continuous phase: no jumps at the bit boundaries.</figcaption>
         </figure>
         <p>
-            The frequency still changes abruptly, but the signal is now smooth across the switch, and the spectrum
+            The frequency still changes abruptly, but the signal is now smooth across the switch and the spectrum
             reflects it: the skirts around the tones fall off considerably faster.
         </p>
         <figure>
@@ -179,7 +174,7 @@
         </p>
         <p>
             The integral is the area under \(f(t)\). With samples spaced by \(T_s\), we can approximate it with a
-            <i>right Riemann sum</i>: the interval \([0, nT_s]\) is split into \(n\) slices of width \(T_s\), and each slice
+            <i>right Riemann sum</i>: the interval \([0, nT_s]\) is split into \(n\) slices of width \(T_s\) and each slice
             is replaced by a rectangle whose height is the value of \(f\) at the slice's right endpoint, \(f[k] = f(kT_s)\):
             \[\int_0^{nT_s} f(\tau)\,d\tau \approx \sum_{k=1}^{n} f[k]\,T_s\ = T_s\sum_{k=1}^{n} f[k]\]
             and the phase at the \(n\)-th sample becomes
@@ -205,7 +200,7 @@
             \varphi[2] = \underbrace{\varphi[0] + \frac{2\pi}{f_s}\,f[1]}_{\varphi[1]} + \frac{2\pi}{f_s}\,f[2]
             = \varphi[1] + \frac{2\pi}{f_s}\,f[2]
             \]
-            The same trick works for any \(n\): we split off the last term of the sum, and what remains is the phase at the
+            The same trick works for any \(n\): we split off the last term of the sum and what remains is the phase at the
             previous sample.
             \[
             \varphi[n] = \underbrace{\varphi[0] + \frac{2\pi}{f_s}\sum_{k=1}^{n-1} f[k]}_{\varphi[n-1]} + \frac{2\pi}{f_s}\,f[n]
@@ -230,7 +225,144 @@
         </p>
     </div>
 
+    <div id="page2" class="page">
+        <h2>3. Orthogonality and tone spacing</h2>
 
+        <h3>3.1 Why we want orthogonal tones</h3>
+        <p>
+            For each symbol, the receiver has to decide which tone was sent. A natural way to do it is to <i>compare</i>
+            the received signal with every candidate tone and pick the one it resembles the most. For this to work, the
+            candidates must not resemble each other: if tone \(A\) was sent, the comparison with tone \(B\) should return
+            nothing, so that the only thing left there is noise. Tones with this property are called <i>orthogonal</i>.
+            The question of this section is: how far apart must \(f_A\) and \(f_B\) be to be othogonal?
+        </p>
+
+        <h3>3.2 The inner product</h3>
+        <p>
+            Let \(T\) be the duration of a symbol, that is, the time during which a tone is sent. Comparing two signals over one symbol is done with the <i>inner product</i>:
+            \[\langle x, y\rangle = \int_0^T x(t)\,y^*(t)\,dt\]
+            where \(^*\) is the complex conjugate. It measures how much of \(y\) is contained in \(x\) and two signals are
+            orthogonal when it is zero.
+        </p>
+        <p>
+            We work with complex exponentials, \(x(t) = e^{j2\pi f_A t}\) and \(y(t) = e^{j2\pi f_B t}\), whose real
+            parts are the cosines we started from.
+        </p>
+
+        <h3>3.3 Computing the integral</h3>
+        <p>
+            The conjugate flips the sign of the exponent of \(y\) and exponents add up when we multiply:
+            \[x(t)\,y^*(t) = e^{j2\pi f_A t}\,e^{-j2\pi f_B t} = e^{j2\pi\Delta t}, \qquad \Delta = f_A - f_B\]
+            The product of the two tones is a single tone at the difference frequency. Its integral is
+            \[\langle x, y\rangle = \int_0^T e^{j2\pi\Delta t}\,dt = \left[\frac{e^{j2\pi\Delta t}}{j2\pi\Delta}\right]_0^T
+            = \frac{e^{j2\pi\Delta T} - 1}{j2\pi\Delta}\]
+            valid for \(\Delta \neq 0\).
+        </p>
+
+        <h3>3.4 Imposing orthogonality</h3>
+        <p>
+            We want \(\langle x, y\rangle = 0\). A fraction is zero when its numerator is zero and its denominator is not.
+            The denominator \(j2\pi\Delta\) is nonzero as long as the two tones are different, \(\Delta \neq 0\). Of
+            course, we also need a symbol with a nonzero duration, \(T > 0\). Under these conditions, all that remains is
+            the numerator:
+            \[e^{j2\pi\Delta T} - 1 = 0 \quad\Longleftrightarrow\quad e^{j2\pi\Delta T} = 1\]
+            By Euler's formula, \(e^{j\theta} = \cos\theta + j\sin\theta\) equals \(1\) only if \(\cos\theta = 1\) and
+            \(\sin\theta = 0\), which happens exactly when \(\theta = 2\pi m\) with \(m\) an integer. With
+            \(\theta = 2\pi\Delta T\):
+            \[\Delta \cdot T = m, \qquad m \in \mathbb{Z}\setminus\{0\}\]
+            \(m = 0\) is excluded because it would require \(\Delta = 0\) or \(T = 0\): in the first case the two tones
+            coincide, in the second the symbol has collapsed to nothing and there is nothing to compare. Negative values of
+            \(m\) just correspond to swapping the names of the two tones, so we can restrict ourselves to \(m = 1, 2, 3, \dots\)
+        </p>
+        <figure>
+            <img src="imgs/unit_circle_full_turns.svg" alt="Unit circle: after every full turn the point is back at 1, with cos = 1 and sin = 0" style="max-width:80%">
+            <figcaption>After a whole number of turns, \(\theta = 2\pi m\), the point is back at \(1\): its real part is \(\cos\theta = 1\) and its imaginary part is \(\sin\theta = 0\).</figcaption>
+        </figure>
+        <p>
+            Geometrically, \(e^{j2\pi\Delta t}\) is a point going around the unit circle and the integral adds up all the
+            positions it visits. If in time \(T\) the point completes a whole number of turns, the positions are evenly
+            spread around the circle and "cancel out".
+        </p>
+
+        <h3>3.5 Why we choose \(m = 1\)</h3>
+        <p>
+            Any nonzero integer \(m\) gives orthogonal tones, so why \(m = 1\)? Because
+            \(\Delta = m/T\) and a larger \(m\) means tones further apart, hence more bandwidth for the same result. The
+            smallest valid choice is therefore:
+            \[\Delta = \frac{1}{T}\]
+        </p>
+
+        <h3>3.6 Four tones</h3>
+        <p>
+            With four tones, \(4\)-FSK (two bits per symbol), we place them at:
+            \[f_k = f_0 + \frac{k}{T}, \qquad k = 0, 1, 2, 3\]
+            Orthogonality has to hold for every pair of tones. There are \(\binom{4}{2} = 6\) of them. For a pair \(k > l\) the spacing is \(\Delta = f_k - f_l = (k - l)/T\), hence
+            \(\Delta T = k - l\), an integer, nonzero because \(k \neq l\). Plugging it into the result of the previous
+            section, \(\langle x_k, x_l\rangle = \dfrac{e^{j2\pi\Delta T} - 1}{j2\pi\Delta}\), we get:
+        </p>
+        <table>
+            <tr>
+                <th>pair \((k, l)\)</th>
+                <th>\(\Delta = f_k - f_l\)</th>
+                <th>\(\Delta T = m\)</th>
+                <th>\(e^{j2\pi m}\)</th>
+                <th>\(\langle x_k, x_l\rangle\)</th>
+            </tr>
+            <tr><td>(1, 0)</td><td>\(1/T\)</td><td>1</td><td>1</td><td>0</td></tr>
+            <tr><td>(2, 1)</td><td>\(1/T\)</td><td>1</td><td>1</td><td>0</td></tr>
+            <tr><td>(3, 2)</td><td>\(1/T\)</td><td>1</td><td>1</td><td>0</td></tr>
+            <tr><td>(2, 0)</td><td>\(2/T\)</td><td>2</td><td>1</td><td>0</td></tr>
+            <tr><td>(3, 1)</td><td>\(2/T\)</td><td>2</td><td>1</td><td>0</td></tr>
+            <tr><td>(3, 0)</td><td>\(3/T\)</td><td>3</td><td>1</td><td>0</td></tr>
+        </table>
+        <p>
+            The same reasoning works for any number of tones \(M\): \(f_k = f_0 + k/T\), \(k = 0, \dots, M-1\).
+        </p>
+
+        <h3>3.7 Two consequences</h3>
+        <p>
+            <b>The FFT</b>: If we take the \(N\) samples of one symbol and compute their FFT, the bins are spaced by
+            \(1/T\) Hz and each bin is exactly the inner product of the signal with a tone at that frequency. So the FFT
+            already compares the signal with all our tones at once and these comparisons don't interfere with each other,
+            which is what we relied on when we said that "all you need is an FFT".
+        </p>
+        <p>
+            <b>The jumps</b>: If \(f_B - f_A = m/T\) and we switch tone at the end of a symbol, \(t = nT\), the
+            phase of the cosines from the first section differs by
+            \(2\pi\,(f_B - f_A)\,nT = 2\pi\,m\,n\), a whole number of turns. So the jumps we saw there disappear on their
+            own whenever the tones are orthogonal. Our example had them because we chose frequencies with no particular
+            relation to \(T\).
+        </p>
+    </div>
+
+    <div id="page3" class="page">
+        <h2>4. Conclusion</h2>
+        <p>
+            We looked at FSK from the ground up and three ideas are worth keeping:
+        </p>
+        <ul>
+            <li>
+                <b>Frequency is the rate of change of phase</b>: A signal whose frequency changes must be built by
+                <i>integrating</i> the frequency, not by multiplying it by time. In discrete time the integral becomes a
+                running sum and a running sum can't jump.
+            </li>
+            <li>
+                <b>Continuous phase keeps the spectrum tidy</b>: Jumps in the signal spread its power far from the tones;
+                letting the phase change only its slope makes the skirts around the tones fall off much faster.
+            </li>
+            <li>
+                <b>The spacing between tones must be a multiple of \(1/T\)</b>: This is exactly the condition for their
+                inner product to vanish, so that the receiver can compare the signal with each candidate tone without the
+                others getting in the way, whatever the phase. The most economical choice is \(1/T\) itself and it works
+                for two tones as well as for four.
+            </li>
+        </ul>
+        <p>
+            A signal built this way is known as <i>continuous-phase FSK</i> (CPFSK). What we haven't covered is everything that happens once the signal leaves the transmitter: noise,
+            how reliably a receiver can tell the tones apart and synchronization. Each of these deserves a discussion of
+            its own.
+        </p>
+    </div>
 
     <div id="navigation-bar">
         <div id="notes">
