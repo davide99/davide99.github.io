@@ -1,0 +1,8 @@
+MIDlet-1: Hello, , com.example.HelloMIDlet
+MIDlet-Name: Hello
+MIDlet-Vendor: Davide
+MIDlet-Version: 1.0.0
+MIDlet-Jar-URL: MyMidlet.jar
+MIDlet-Jar-Size: 1070
+MicroEdition-Configuration: CLDC-1.0
+MicroEdition-Profile: MIDP-2.0
