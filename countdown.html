@@ -85,27 +85,6 @@
             }
         }
 
-        /* --- Scherzo --- */
-        #prank {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 180px;
-            height: auto;
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0;
-            transition: opacity 0.3s;
-            will-change: transform;
-            transform-origin: 50% 8%; /* la punta */
-            color: #222;
-        }
-
-        @media (max-width: 500px) {
-            #prank {
-                width: 130px;
-            }
-        }
     </style>
 </head>
 
@@ -133,20 +112,6 @@
         </div>
     </main>
 
-    <!-- Scherzo: solo contorni, nessun riempimento -->
-    <svg id="prank" viewBox="0 0 100 156" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-        <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <!-- contorno unico: asta + testa + testicoli -->
-            <path d="M40 107.5 L40 36 C40 6 60 6 60 36 L60 107.5
-                     A22 22 0 1 1 50 140.65
-                     A22 22 0 1 1 40 107.5 Z"/>
-            <!-- bordo della testa -->
-            <path d="M40 36 Q50 44 60 36"/>
-        </g>
-        <text x="50" y="134" text-anchor="middle" font-family="Arial, sans-serif"
-              font-size="13" font-weight="bold" letter-spacing="1" fill="currentColor">BCC</text>
-    </svg>
-
     <script>
         const END = new Date("2026-10-30T18:00:00");
 
@@ -155,158 +120,49 @@
             return day >= 1 && day <= 5;
         }
 
+        function remaining(now) {
+            if (now >= END) return { days: 0, hours: 0, minutes: 0 };
+
+            // prossime 18:00 (setHours/setDate lavorano in ora locale: nessun problema col cambio ora)
+            const next = new Date(now);
+            next.setHours(18, 0, 0, 0);
+            if (next <= now) {
+                next.setDate(next.getDate() + 1);
+                next.setHours(18, 0, 0, 0);
+            }
+
+            // quanti blocchi lavorativi terminano da "next" fino a END (incluso)
+            let blocks = 0;
+            const d = new Date(next);
+            while (d <= END) {
+                if (isWorkingDay(d)) blocks++;
+                d.setDate(d.getDate() + 1);
+                d.setHours(18, 0, 0, 0);
+            }
+
+            if (isWorkingDay(next)) {
+                // sono dentro un blocco lavorativo: giorni interi + tempo fino alle 18:00
+                const ms = next - now;
+                return {
+                    days: blocks - 1,
+                    hours: Math.floor(ms / 3600000),
+                    minutes: Math.floor((ms % 3600000) / 60000)
+                };
+            }
+            // il blocco in corso finisce di sabato o domenica: non conta, tempo fermo
+            return { days: blocks, hours: 0, minutes: 0 };
+        }
+
         function updateCountdown() {
-            const now = new Date();
-
-            if (now >= END) {
-                document.getElementById("days").textContent = "0";
-                document.getElementById("hours").textContent = "00";
-                document.getElementById("minutes").textContent = "00";
-                return;
-            }
-
-            // Ore/minuti fino alle prossime 18:00 (orario "da orologio")
-            const endSec = END.getHours() * 3600 + END.getMinutes() * 60;
-            const nowSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-            let diffSec = endSec - nowSec;
-            if (diffSec <= 0) diffSec += 86400;
-
-            const hours = Math.floor(diffSec / 3600);
-            const minutes = Math.floor((diffSec % 3600) / 60);
-
-            // Giorni lavorativi DOPO il giorno di quelle 18:00, fino al 30/10 incluso
-            const anchor = new Date(now);
-            if (nowSec >= endSec) anchor.setDate(anchor.getDate() + 1);
-
-            const current = new Date(anchor);
-            current.setHours(0, 0, 0, 0);
-            current.setDate(current.getDate() + 1);
-
-            const endDate = new Date(END);
-            endDate.setHours(0, 0, 0, 0);
-
-            let workingDays = 0;
-            while (current <= endDate) {
-                if (isWorkingDay(current)) workingDays++;
-                current.setDate(current.getDate() + 1);
-            }
-
-            document.getElementById("days").textContent = workingDays;
-            document.getElementById("hours").textContent = String(hours).padStart(2, "0");
-            document.getElementById("minutes").textContent = String(minutes).padStart(2, "0");
+            const r = remaining(new Date());
+            document.getElementById("days").textContent = r.days;
+            document.getElementById("hours").textContent = String(r.hours).padStart(2, "0");
+            document.getElementById("minutes").textContent = String(r.minutes).padStart(2, "0");
         }
 
         updateCountdown();
         setInterval(updateCountdown, 1000);
-
-        // --- Scherzo: pendolo appeso al cursore ---
-        (function () {
-            const el = document.getElementById("prank");
-            const isTouch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
-            const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-            const TIP = 0.08; // altezza della punta (frazione dell'altezza totale)
-
-            // Parametri della fisica (ritoccabili)
-            const G = 2500;     // "gravità" in px/s²: più alta = oscilla più veloce
-            const DAMP = 2.2;   // attrito: più alto = si ferma prima
-            const KICK = 0.4;   // quanto il movimento del cursore lo fa dondolare
-            const AMAX = 12000; // limite all'accelerazione del cursore
-
-            // gli <svg> non hanno offsetWidth/offsetHeight: calcolo le dimensioni dallo stile
-            const size = () => {
-                const w = parseFloat(getComputedStyle(el).width) || 180;
-                return { w: w, h: w * 156 / 100 };
-            };
-
-            let x = window.innerWidth / 2;   // posizione della punta (il perno)
-            let y = window.innerHeight / 2;
-            let th = 0, om = 0;              // angolo (rad) e velocità angolare
-            let px = x, py = y, pvx = 0, pvy = 0;
-
-            function draw() {
-                const sz = size();
-                el.style.transform =
-                    "translate3d(" + (x - sz.w / 2) + "px," + (y - sz.h * TIP) + "px,0) rotate(" +
-                    (th * 180 / Math.PI) + "deg)";
-            }
-
-            // Pendolo con perno mobile: appeso per la punta, il corpo penzola e oscilla
-            function physics(dt) {
-                const vx = (x - px) / dt, vy = (y - py) / dt;
-                let ax = (vx - pvx) / dt, ay = (vy - pvy) / dt;
-                px = x; py = y; pvx = vx; pvy = vy;
-                ax = clamp(ax, -AMAX, AMAX) * KICK;
-                ay = clamp(ay, -AMAX, AMAX) * KICK;
-
-                const L = size().h * 0.55;   // distanza punta -> baricentro
-                const n = 4, h = dt / n;
-                for (let i = 0; i < n; i++) {
-                    const acc = (ax * Math.cos(th) - (G - ay) * Math.sin(th)) / L - DAMP * om;
-                    om = clamp(om + acc * h, -30, 30);
-                    th += om * h;
-                }
-            }
-
-            let last = performance.now();
-            const getDt = (now) => {
-                const dt = clamp((now - last) / 1000, 0.001, 0.033);
-                last = now;
-                return dt;
-            };
-
-            if (!isTouch) {
-                // Desktop: la punta sta sul cursore, il corpo penzola e oscilla
-                let tx = x, ty = y, seen = false;
-
-                window.addEventListener("mousemove", function (e) {
-                    tx = e.clientX;
-                    ty = e.clientY;
-                    if (!seen) { x = tx; y = ty; px = x; py = y; seen = true; }
-                    el.style.opacity = "1";
-                });
-                document.addEventListener("mouseleave", function () {
-                    el.style.opacity = "0";
-                });
-
-                (function loop(now) {
-                    const dt = getDt(now);
-                    const f = 1 - Math.exp(-dt * 20);   // piccolo smorzamento del perno
-                    x += (tx - x) * f;
-                    y += (ty - y) * f;
-                    physics(dt);
-                    draw();
-                    requestAnimationFrame(loop);
-                })(performance.now());
-            } else {
-                // Mobile: il perno si muove da solo su traiettorie curve e rimbalza sui bordi
-                let vx = 150, vy = 115;   // px/s
-                const turn = 0.5;         // rad/s: quanto curva la traiettoria
-                el.style.opacity = "1";
-
-                (function loop(now) {
-                    const dt = getDt(now);
-
-                    const c = Math.cos(turn * dt), s = Math.sin(turn * dt);
-                    const nvx = vx * c - vy * s, nvy = vx * s + vy * c;
-                    vx = nvx; vy = nvy;
-                    x += vx * dt;
-                    y += vy * dt;
-
-                    const sz = size(), hw = sz.w / 2;
-                    if (x < hw) { x = hw; vx = Math.abs(vx); }
-                    if (x > window.innerWidth - hw) { x = window.innerWidth - hw; vx = -Math.abs(vx); }
-                    if (y < 0) { y = 0; vy = Math.abs(vy); }
-                    const ymax = window.innerHeight - sz.h * (1 - TIP);
-                    if (y > ymax) { y = ymax; vy = -Math.abs(vy); }
-
-                    physics(dt);
-                    draw();
-                    requestAnimationFrame(loop);
-                })(performance.now());
-            }
-        })();
     </script>
 
-<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"7b4c725c5e554e878091a017844a2e7e","r":1,"spa":2}' crossorigin="anonymous"></script>
 </body>
 </html>
